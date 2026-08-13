@@ -3,9 +3,12 @@ import { Chess } from 'npm:chess.js@1.4.0';
 import { exercises } from './exercises.js';
 import { debugExercises } from './debug-exercises.js';
 import { careerEvents } from './career-events.js';
+import { MAX_LEVEL, MIN_LEVEL, START_LEVEL, baseElo } from './game-config.js';
 
-const ELO_BASE = [600, 800, 1200, 1400, 1600, 2000, 2200, 2350, 2500, 2600, 2750];
-const CLIENT_VERSION = '1.2.0';
+const CLIENT_VERSION = '1.3.0';
+const LEGACY_CLIENT_VERSION = '1.2.0';
+const SUPPORTED_CLIENT_VERSIONS = new Set([LEGACY_CLIENT_VERSION, CLIENT_VERSION]);
+const LEGACY_ELO_BASE = [600,800,1200,1400,1600,2000,2200,2350,2500,2600,2750];
 const TITLE_RULES = [
   { code: 'FM', threshold: 2300, name: 'Maestro FIDE' },
   { code: 'IM', threshold: 2400, name: 'Maestro Internacional' },
@@ -86,7 +89,10 @@ function chanceSucceeds(chance: number) {
 }
 
 function currentElo(session: Session) {
-  return ELO_BASE[session.level] + session.decision_elo + session.exercise_elo;
+  const floor = session.client_version === LEGACY_CLIENT_VERSION
+    ? LEGACY_ELO_BASE[session.level]
+    : baseElo(session.level);
+  return floor + session.decision_elo + session.exercise_elo;
 }
 
 function titleRank(code: string) {
@@ -121,7 +127,7 @@ function publicSession(session: Session) {
     currentExerciseId: session.current_exercise_id,
     exerciseAttempts: session.exercise_attempts,
     exerciseStep: session.exercise_step,
-    currentElo: currentElo(session),
+    currentElo: session.current_elo ?? currentElo(session),
     completed: Boolean(session.completed_at) || session.season > 10,
     clientVersion: session.client_version,
   };
@@ -132,6 +138,7 @@ function enrichProgress(session: Session, changes: Session) {
   const elo = currentElo(candidate);
   const award = earnedTitle(elo, session.chess_title);
   if (award) changes.chess_title = award.code;
+  changes.current_elo = elo;
   changes.max_elo = Math.max(session.max_elo, elo);
   changes.max_level = Math.max(session.max_level, candidate.level);
   return award ? {
@@ -189,8 +196,11 @@ function publicEvent(event: any) {
 
 function seasonExercises(session: Session) {
   const source = session.debug ? debugExercises : exercises;
-  const exerciseLevel = Math.max(1, session.level);
-  const pool = source.filter((item: any) => item.level === exerciseLevel);
+  const exerciseLevel = session.level;
+  const pool = source.filter((item: any) =>
+    item.level === exerciseLevel &&
+    (session.debug || session.client_version !== LEGACY_CLIENT_VERSION || item.legacy)
+  );
   if (!pool.length) throw new ApiError(422, `No hay ejercicios para el nivel ${exerciseLevel}.`);
   const offset = ((session.season - 1) * 2) % pool.length;
   return [pool[offset], pool[(offset + 1) % pool.length]];
@@ -288,8 +298,8 @@ async function completeExercise(admin: any, session: Session, success: boolean, 
   if (answers.length === 2) {
     seasonCompleted = true;
     let nextLevel = session.level;
-    if (correct === 2) nextLevel = Math.min(10, nextLevel + 1);
-    if (correct === 0) nextLevel = Math.max(0, nextLevel - 1);
+    if (correct === 2) nextLevel = Math.min(MAX_LEVEL, nextLevel + 1);
+    if (correct === 0) nextLevel = Math.max(MIN_LEVEL, nextLevel - 1);
     movement = nextLevel > previousLevel ? 'up' : nextLevel < previousLevel ? 'down' : 'same';
     changes.level = nextLevel;
     changes.season = session.season + 1;
@@ -315,7 +325,8 @@ Deno.serve(async (request) => {
     });
     const payload = await request.json().catch(() => ({}));
     const action = String(payload.action || '');
-    if (String(payload.clientVersion || '') !== CLIENT_VERSION) {
+    const requestedClientVersion = String(payload.clientVersion || '');
+    if (!SUPPORTED_CLIENT_VERSIONS.has(requestedClientVersion)) {
       throw new ApiError(409, 'Hay una versión nueva del juego. Recargá la página para continuar.');
     }
     const visitor = await resolveVisitor(admin, payload.visitorToken, action === 'start');
@@ -329,7 +340,15 @@ Deno.serve(async (request) => {
         visitor_id: visitorId,
         player_name: name,
         debug,
-        client_version: CLIENT_VERSION,
+        level: START_LEVEL,
+        max_level: START_LEVEL,
+        max_elo: requestedClientVersion === LEGACY_CLIENT_VERSION
+          ? LEGACY_ELO_BASE[START_LEVEL]
+          : baseElo(START_LEVEL),
+        current_elo: requestedClientVersion === LEGACY_CLIENT_VERSION
+          ? LEGACY_ELO_BASE[START_LEVEL]
+          : baseElo(START_LEVEL),
+        client_version: requestedClientVersion,
       }).select('*').single();
       if (error) throw error;
       if (!debug) {
