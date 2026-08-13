@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;800&family=Fraunces:ital,wght@1,800&display=swap');
+
+:root{
+  --ink:#171511;
+  --paper:#f3ead7;
+  --cream:#fffaf0;
+  --orange:#e5532d;
+  --yellow:#f2b942;
+  --green:#315746;
+  --line:#b9aa8d;
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--ink);font-family:'DM Sans',sans-serif;color:var(--ink)}
+button,input{font:inherit}
+.app{width:100%;max-width:1180px;min-height:100vh;margin:auto;background:var(--paper)}
+header{height:76px;padding:0 clamp(20px,5vw,60px);display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--ink);background:var(--paper)}
+.brand{display:flex;gap:10px;align-items:center;font-size:12px;font-weight:800;line-height:.9;letter-spacing:.08em}.brand img{display:block;width:38px;height:38px}
+.link{border:0;border-bottom:1px solid;background:none;font-weight:800;cursor:pointer;color:var(--ink)}
+.welcome{min-height:calc(100vh - 76px);display:grid;grid-template-columns:1.08fr .92fr;background:var(--paper)}
+.welcome>div{padding:clamp(48px,9vw,110px) clamp(28px,7vw,80px)}
+.tag{text-transform:uppercase;letter-spacing:.16em;font-size:11px;font-weight:800;color:var(--orange);margin:0 0 16px}
+.welcome h1,.stage h2{font-size:clamp(43px,7vw,78px);line-height:.91;letter-spacing:-.06em;margin:0 0 28px}.welcome em{font-family:Fraunces,serif;color:var(--orange)}
+.welcome p,.lead{font-size:18px;line-height:1.55;max-width:700px}.welcome form{margin-top:42px}.welcome label{font-weight:800;display:block;margin-bottom:10px}.welcome form div{display:flex;max-width:520px}
+.welcome input{flex:1;min-width:0;padding:15px;background:var(--cream);border:2px solid var(--ink)}
+.welcome button,.primary,.secondary{padding:15px 20px;border:2px solid var(--ink);font-weight:800;box-shadow:4px 4px 0 var(--ink);cursor:pointer}.welcome form button,.primary{background:var(--orange);color:white}.secondary{background:var(--yellow);color:var(--ink)}
+.welcome aside{position:relative;overflow:hidden;background:var(--green);font-family:'Segoe UI Symbol',serif}.welcome aside:before{content:'';position:absolute;width:370px;height:370px;border-radius:50%;background:var(--yellow);top:70px;right:-50px}
+.welcome aside span,.welcome aside i{position:absolute;font-style:normal;line-height:1;text-shadow:9px 9px #0002}.welcome aside span{font-size:270px;top:230px;right:110px;color:var(--ink)}.welcome aside i{font-size:190px;top:390px;right:-20px;color:var(--cream)}
+
+.game{display:grid;grid-template-columns:270px 1fr;min-height:calc(100vh - 76px)}
+.profile{background:var(--green);color:var(--cream);padding:45px 30px}.profile .tag{color:var(--yellow)}.profile h2{font-size:30px;margin:0}.profile>p:nth-of-type(2){margin-top:5px;color:#d4ddce}
+.debug-badge{display:inline-block;margin:10px 0 0!important;padding:7px 9px;background:var(--yellow);color:var(--ink)!important;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+.elo-breakdown{margin:-25px 0 34px;font-size:11px;line-height:1.45;color:#d4ddce;text-transform:uppercase;letter-spacing:.06em}
+.profile dl{margin:40px 0}.profile dl div{display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid #789080;padding:16px 0}.profile dt{font-size:11px;text-transform:uppercase;letter-spacing:.12em}.profile dd{font-size:25px;font-weight:800;margin:0}
+.meter-label{display:flex;justify-content:space-between;text-transform:uppercase;font-size:11px;font-weight:800}.meter{height:8px;border:1px solid var(--cream);margin-top:9px}.meter i{display:block;height:100%;background:var(--yellow);width:0;transition:.3s}
+.stage{padding:clamp(40px,7vw,85px);display:flex;align-items:center;background:var(--paper);min-width:0}.stage>div{width:100%;min-width:0}.stage h2{font-size:clamp(38px,5vw,63px)}
+.puzzle-head{display:flex;justify-content:space-between;gap:20px}.puzzle-head h2{font-size:clamp(31px,4vw,48px)}.attempts{text-align:right}.attempts small{display:block;text-transform:uppercase;font-size:10px;font-weight:800}.attempts b{color:var(--orange);letter-spacing:4px;white-space:nowrap}
+.puzzle-grid{display:grid;grid-template-columns:minmax(300px,500px) minmax(190px,1fr);gap:32px;align-items:center;min-width:0}.board-wrap{width:min(100%,500px);min-width:0}
+.board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));width:100%;aspect-ratio:1/1;border:5px solid var(--ink);box-shadow:7px 7px var(--orange);overflow:hidden}
+.square{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100%;min-width:0;min-height:0;aspect-ratio:1/1;overflow:hidden;border:0;padding:0;background:#e8d5ac;cursor:pointer}.square.dark{background:#8f4e35}.square.selected{outline:5px solid var(--yellow);outline-offset:-5px;z-index:1}.square.last{box-shadow:inset 0 0 0 4px var(--orange)}
+.piece-image{display:block;width:88%;height:88%;object-fit:contain;pointer-events:none;user-select:none;position:relative;z-index:1}
+.coordinate{position:absolute;z-index:2;font-size:10px;font-weight:800;line-height:1;pointer-events:none;color:var(--ink)}.coordinate.file{right:4px;bottom:3px}.coordinate.rank{left:4px;top:4px}.square.dark .coordinate{color:var(--cream)}
+.brief{font-size:17px;line-height:1.5}.brief a{display:block;margin-top:22px;color:var(--ink);font-size:12px;font-weight:800}.turn{font-size:12px;font-weight:800;text-transform:uppercase;padding:8px 10px;background:var(--ink);color:white;display:inline-block}.feedback{min-height:78px;font-weight:800}.feedback.good{color:var(--green)}.feedback.bad{color:var(--orange)}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:36px}.choices button{min-height:145px;background:var(--cream);border:2px solid var(--ink);text-align:left;padding:22px;box-shadow:5px 5px var(--ink);cursor:pointer;color:var(--ink)}.choices button:nth-child(2){background:#f1d9ae}.choices b,.choices span,.choices small{display:block}.choices b{font-size:18px;margin-bottom:7px}.choices span{color:#635d51;line-height:1.4}.choices small{margin-top:14px;text-transform:uppercase;letter-spacing:.08em;font-weight:800;color:var(--orange)}.crown{font-size:100px;color:var(--orange)}
+.achievement{margin:0 0 34px;padding:18px 20px;border:2px solid var(--ink);background:var(--yellow);box-shadow:5px 5px 0 var(--ink)}.achievement strong,.achievement span{display:block}.achievement strong{font-size:21px;margin-bottom:5px}.achievement span{line-height:1.45}
+
+@media(max-width:760px){
+  header{height:64px}.welcome{grid-template-columns:1fr}.welcome aside{min-height:320px}.welcome aside:before{width:250px;height:250px}.welcome aside span{font-size:190px;top:105px}.welcome aside i{font-size:140px;top:195px}.welcome form div{display:grid;gap:8px}
+  .game{grid-template-columns:1fr}.profile{padding:20px}.profile dl{display:grid;grid-template-columns:repeat(3,1fr);margin:15px 0}.profile dl div{display:block;border:0;padding:4px}.stage{padding:38px 20px;align-items:start}.puzzle-grid{grid-template-columns:1fr}.board-wrap{margin:auto}.choices{grid-template-columns:1fr}
+}
+@media(max-width:390px){.stage{padding-inline:14px}.puzzle-head{display:block}.attempts{text-align:left;margin-bottom:14px}.board{border-width:3px;box-shadow:4px 4px var(--orange)}.coordinate{font-size:8px}}
