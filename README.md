@@ -11,9 +11,9 @@ Juego narrativo de carrera ajedrecística con 10 temporadas, un dilema por tempo
 
 Cada ejercicio resuelto también aporta ELO acumulativo:
 
-- Primer intento: +25 ELO.
-- Segundo intento: +15 ELO.
-- Tercer intento: +5 ELO.
+- Primer intento: +12 ELO.
+- Segundo intento: +6 ELO.
+- Tercer intento: +3 ELO.
 - Sin resolver: +0 ELO.
 
 La fórmula completa es `ELO base del nivel + saldo de decisiones + ELO ganado en ejercicios`.
@@ -34,7 +34,19 @@ La fórmula completa es `ELO base del nivel + saldo de decisiones + ELO ganado e
 
 Los nombres **Torneo de Candidatos**, **Campeonato del Mundo** y **Defendé la corona** aparecen únicamente cuando el jugador está en los niveles 8, 9 y 10, respectivamente.
 
-Al alcanzar 2200 de ELO se obtiene permanentemente el título **IM**; al alcanzar 2500 se reemplaza por **GM**. El título aparece delante del nombre del jugador.
+Al superar 2300 de ELO se obtiene permanentemente el título **FM**; al superar 2400 se reemplaza por **IM** y al superar 2500 por **GM**. Los títulos no se pierden aunque luego baje el ELO.
+
+Cada decisión suma o resta una cantidad aleatoria dentro de un margen de ±5 puntos respecto de su impacto base.
+
+La pantalla final consulta un ranking global con la mejor carrera de cada participante. Incluye nombre, ELO y nivel máximos, decisiones positivas, ejercicios resueltos, cantidad de participantes, cantidad de carreras terminadas, posición, percentil e histograma de ELO.
+
+## Validación y ranking
+
+La progresión se valida en la función Edge `game-api`: el servidor asigna el dilema y los ejercicios, resuelve el azar, verifica cada jugada y calcula intentos, ELO, niveles y títulos. El navegador no puede enviar un puntaje final arbitrario.
+
+Los datos se guardan en Supabase mediante las migraciones de `supabase/migrations`. Las tablas tienen RLS activado sin políticas públicas; el navegador solo accede a la función de juego usando un token aleatorio por instalación. No se solicitan correo ni datos personales.
+
+“Participantes” cuenta instalaciones de navegador únicas que comenzaron una carrera normal, por lo que es una aproximación a personas. Cada jugador aparece una sola vez en el ranking, con su mejor carrera. Las carreras `BOCA` quedan fuera de todas las estadísticas globales.
 
 ## Situaciones
 
@@ -42,7 +54,7 @@ Las 20 situaciones de carrera están en `career-events.js`. Cada una declara tem
 
 ## Modo debug
 
-Usá `BOCA` como nombre del jugador. El modo debug utiliza 50 ejercicios reales de mate en 1 con rating de origen 600–799, distribuidos artificialmente entre los niveles 1–10.
+Usá `BOCA` como nombre del jugador. El modo debug utiliza 50 ejercicios reales de mate en 1 con rating de origen 600–799, distribuidos artificialmente entre los niveles 1–10. Sus carreras no cuentan como participantes ni alteran el ranking o el histograma.
 
 Los datos están en `data/debug_mates_50.json`. El banco normal de ejercicios permanece en `data/ejercicios_ajedrez_30.csv` y `data/ejercicios_ajedrez_30.md`.
 

@@ -1,7 +1,8 @@
 import { Chess } from 'https://cdn.jsdelivr.net/npm/chess.js@1.4.0/+esm';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import { exercises } from './exercises.js';
 import { debugExercises } from './debug-exercises.js';
-import { careerEvents } from './career-events.js';
+import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from './backend-config.js';
 
 const seasons = [
   'El club de barrio',
@@ -17,12 +18,18 @@ const seasons = [
 ];
 
 const ELO_BASE = [600,800,1200,1400,1600,2000,2200,2350,2500,2600,2750];
+const GAME_KEY = 'gambito-v5';
+const VISITOR_KEY = 'gambito-visitor-v1';
+const CLIENT_VERSION = '1.2.0';
 const pieceName = { k:'rey', q:'dama', r:'torre', b:'alfil', n:'caballo', p:'peón' };
 const $ = id => document.getElementById(id);
+const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 let state = {
   name:'', season:1, level:0, wins:0, decisionElo:0, exerciseElo:0, chessTitle:'', pendingAchievement:null,
-  eventsDone:[], introsSeen:[], seasonAnswers:[], eventHistory:[], currentEventId:null
+  eventsDone:[], introsSeen:[], seasonAnswers:[], eventHistory:[], currentEventId:null,
+  decisionPositive:0, decisionTotal:0, exerciseTotal:0, maxElo:600, maxLevel:0,
+  serverSessionId:null, exerciseAttempts:3, exerciseStep:0, completed:false
 };
 
 let chess;
@@ -36,30 +43,46 @@ let boardOrientation = 'w';
 let solutionMode = 'san';
 let solutionDisplay = '';
 let initialPuzzleFen = '';
+let movePending = false;
+let latestGlobalStats = null;
+
+async function serverAction(action, values = {}){
+  const visitorToken = localStorage.getItem(VISITOR_KEY);
+  const {data,error} = await supabase.functions.invoke('game-api', {
+    body:{action,sessionId:state.serverSessionId,visitorToken,clientVersion:CLIENT_VERSION,...values}
+  });
+  if(error){
+    let serverMessage = data?.error;
+    try {
+      if(!serverMessage && error.context?.json) serverMessage = (await error.context.json())?.error;
+    } catch {}
+    throw new Error(serverMessage || error.message || 'No se pudo contactar al servidor del juego.');
+  }
+  if(data?.error) throw new Error(data.error);
+  if(data?.visitorToken) localStorage.setItem(VISITOR_KEY,data.visitorToken);
+  return data;
+}
+
+function applyServerState(serverState){
+  if(!serverState) return;
+  const localOnly = {introsSeen:state.introsSeen,pendingAchievement:state.pendingAchievement};
+  state = {...state,...serverState,...localOnly,serverSessionId:serverState.id};
+  attempts = state.exerciseAttempts ?? attempts;
+  persist();
+  stats();
+}
 
 function isDebug(){ return state.name.trim().toUpperCase() === 'BOCA'; }
 function adjustedElo(ex){ return Math.round(ex.rating * 1.5); }
 function currentElo(){ return ELO_BASE[state.level] + state.decisionElo + state.exerciseElo; }
 function displayName(){ return `${state.chessTitle ? state.chessTitle + ' ' : ''}${state.name}`; }
 function stageName(){ return state.level === 10 ? 'Defendé la corona' : state.level === 9 ? 'Campeonato del Mundo' : state.level === 8 ? 'Torneo de Candidatos' : seasons[state.season - 1]; }
-function persist(){ localStorage.setItem('gambito-v4', JSON.stringify(state)); }
+function persist(){ localStorage.setItem(GAME_KEY, JSON.stringify(state)); }
 function screens(active){ ['intro','puzzle','event','result','ending'].forEach(id => $(id).hidden = id !== active); }
 
-function updateChessTitle(){
-  const elo = currentElo();
-  if(elo >= 2500 && state.chessTitle !== 'GM'){
-    state.chessTitle = 'GM';
-    return {title:'¡Felicitaciones, Gran Maestro!',text:'Alcanzaste 2500 de ELO. Desde ahora tu nombre lleva el título GM.'};
-  }
-  if(elo >= 2400 && state.chessTitle !== 'IM'){
-    state.chessTitle = 'IM';
-    return {title:'¡Felicitaciones, Maestro Internacional!',text:'Alcanzaste 2400 de ELO. Desde ahora tu nombre lleva el título IM.'};
-  }
-  if(elo >= 2300 && !state.chessTitle){
-    state.chessTitle = 'FM';
-    return {title:'¡Felicitaciones, Maestro FIDE!',text:'Alcanzaste 2300 de ELO. Desde ahora tu nombre lleva el título FM.'};
-  }
-  return null;
+function updatePeaks(){
+  state.maxElo = Math.max(Number(state.maxElo) || 0, currentElo());
+  state.maxLevel = Math.max(Number(state.maxLevel) || 0, state.level);
 }
 
 function showAchievement(award){
@@ -70,6 +93,7 @@ function showAchievement(award){
 }
 
 function stats(){
+  updatePeaks();
   $('player').textContent = displayName();
   $('season').textContent = Math.min(state.season, 10);
   $('elo').textContent = currentElo();
@@ -80,14 +104,14 @@ function stats(){
   const done = state.seasonAnswers.length;
   $('seasonProgress').textContent = `${done}/2`;
   $('bar').style.width = `${done / 2 * 100}%`;
-  $('rank').textContent = state.chessTitle === 'GM' ? 'Gran Maestro' : state.chessTitle === 'IM' ? 'Maestro Internacional' : state.level >= 10 ? 'Campeón del mundo' : state.level === 9 ? 'Retador mundial' : state.level === 8 ? 'Candidato' : state.level >= 5 ? 'Figura nacional' : state.level >= 3 ? 'Talento regional' : 'Promesa del club';
+  $('rank').textContent = state.chessTitle === 'GM' ? 'Gran Maestro' : state.chessTitle === 'IM' ? 'Maestro Internacional' : state.chessTitle === 'FM' ? 'Maestro FIDE' : state.level >= 10 ? 'Campeón del mundo' : state.level === 9 ? 'Retador mundial' : state.level === 8 ? 'Candidato' : state.level >= 5 ? 'Figura nacional' : state.level >= 3 ? 'Talento regional' : 'Promesa del club';
 }
 
-function enterGame(){
+async function enterGame(){
   $('welcome').hidden = true;
   $('game').hidden = false;
   stats();
-  route();
+  await route();
 }
 
 function getSeasonExercises(){
@@ -98,7 +122,7 @@ function getSeasonExercises(){
   return [pool[offset], pool[(offset + 1) % pool.length]];
 }
 
-function route(){
+async function route(){
   if(state.season > 10) return ending();
   if(!state.introsSeen.includes(state.season)){
     screens('intro');
@@ -109,8 +133,14 @@ function route(){
     return;
   }
   if(!state.eventsDone.includes(state.season)) return showEvent();
-  const plan = getSeasonExercises();
-  loadPuzzle(plan[state.seasonAnswers.length]);
+  try {
+    const result = await serverAction('exercise');
+    applyServerState(result.state);
+    const plan = getSeasonExercises();
+    const planned = plan.find(item => (item.id || item.source.split('/').pop()) === result.exerciseId);
+    if(!planned) throw new Error('El servidor indicó un ejercicio que no existe en esta versión del juego.');
+    loadPuzzle(planned);
+  } catch(error){ showServerError(error); }
 }
 
 function parseSanSolution(text){ return text.replaceAll('/',' ').trim().split(/\s+/).filter(Boolean); }
@@ -138,8 +168,9 @@ function loadPuzzle(ex){
   }).join(' / ');
 
   boardOrientation = chess.turn();
-  step = 0;
-  attempts = 3;
+  step = state.exerciseStep || 0;
+  attempts = state.exerciseAttempts ?? 3;
+  for(let index = 0; index < step; index++) playToken(chess, sequence[index], solutionMode);
   selected = null;
   last = [];
   screens('puzzle');
@@ -157,6 +188,12 @@ function loadPuzzle(ex){
 function render(){
   $('attempts').textContent = '● '.repeat(attempts) + '○ '.repeat(3 - attempts);
   $('turn').textContent = `Juegan ${chess.turn() === 'w' ? 'blancas' : 'negras'} · Tu movimiento`;
+  const isCheck = chess.isCheck();
+  const checkedColor = isCheck ? chess.turn() : null;
+  const ownKingInCheck = isCheck && checkedColor === boardOrientation;
+  $('checkStatus').hidden = !isCheck;
+  $('checkStatus').className = `check-status ${ownKingInCheck ? 'against' : 'given'}`;
+  $('checkStatus').textContent = ownKingInCheck ? '⚠ Tu rey está en jaque' : '⚡ ¡Jaque al rival!';
   const board = $('board');
   board.innerHTML = '';
   const ranks = boardOrientation === 'w' ? [8,7,6,5,4,3,2,1] : [1,2,3,4,5,6,7,8];
@@ -170,6 +207,7 @@ function render(){
     button.className = `square ${dark ? 'dark' : 'light'}`;
     if(squareName === selected) button.classList.add('selected');
     if(last.includes(squareName)) button.classList.add('last');
+    if(isCheck && piece?.type === 'k' && piece.color === checkedColor) button.classList.add('in-check');
 
     if(piece){
       const image = document.createElement('img');
@@ -181,19 +219,14 @@ function render(){
     }
     if(ri === 7){ const label = document.createElement('span'); label.className = 'coordinate file'; label.textContent = file; button.appendChild(label); }
     if(fi === 0){ const label = document.createElement('span'); label.className = 'coordinate rank'; label.textContent = rank; button.appendChild(label); }
-    button.setAttribute('aria-label', piece ? `${squareName}, ${pieceName[piece.type]} ${piece.color === 'w' ? 'blanco' : 'negro'}` : squareName);
+    button.setAttribute('aria-label', piece ? `${squareName}, ${pieceName[piece.type]} ${piece.color === 'w' ? 'blanco' : 'negro'}${button.classList.contains('in-check') ? ', en jaque' : ''}` : squareName);
     button.onclick = () => tap(squareName);
     board.appendChild(button);
   }));
 }
 
-function normalized(s){ return s.replace(/[+#]/g,'').replace(/[!?]/g,''); }
-function matchesExpected(move, expected){
-  if(solutionMode === 'san') return normalized(move.san) === normalized(expected);
-  return `${move.from}${move.to}${move.promotion || ''}` === expected;
-}
-
-function tap(squareName){
+async function tap(squareName){
+  if(movePending) return;
   const piece = chess.get(squareName);
   if(!selected){
     if(!piece || piece.color !== chess.turn()) return;
@@ -207,76 +240,77 @@ function tap(squareName){
     return;
   }
 
-  const expected = sequence[step];
+  const expected = sequence[step] || '';
   const expectedUci = solutionMode === 'uci' ? expected : '';
-  const promotion = expectedUci.startsWith(selected + squareName) && expectedUci[4] ? expectedUci[4] : 'q';
+  const sanPromotion = expected.match(/=([QRBN])/i)?.[1]?.toLowerCase();
+  const promotion = expectedUci.startsWith(selected + squareName) && expectedUci[4] ? expectedUci[4] : sanPromotion || 'q';
+  const submittedMove = `${selected}${squareName}${promotion && (chess.get(selected)?.type === 'p' && ['1','8'].includes(squareName[1])) ? promotion : ''}`;
   let move;
   try { move = chess.move({from:selected, to:squareName, promotion}); }
   catch { move = null; }
-
-  if(!move || !matchesExpected(move, expected)) return wrong();
-  last = [move.from, move.to];
   selected = null;
-  step++;
-  feedback('¡Buena jugada! Calculando la respuesta…', 'good');
-  render();
-  setTimeout(opponentOrFinish, 650);
-}
+  const attemptsBefore = attempts;
+  movePending = true;
+  try {
+    const result = await serverAction('move',{move:submittedMove});
+    applyServerState(result.state);
 
-function opponentOrFinish(){
-  if(step >= sequence.length) return solved();
-  const reply = sequence[step];
-  let move;
-  try { move = playToken(chess, reply, solutionMode); }
-  catch { move = null; }
-  if(!move){ feedback(`No se pudo reproducir la respuesta ${reply}.`, 'bad'); return; }
-  last = [move.from, move.to];
-  step++;
-  render();
-  if(step >= sequence.length) return solved();
-  feedback('El rival respondió. Encontrá la continuación.', '');
-}
+    if(result.status === 'wrong'){
+      chess = new Chess(initialPuzzleFen); step = 0; selected = null; last = []; attempts = result.attempts;
+      feedback(`No es la línea buscada. Te quedan ${attempts} intentos; la posición vuelve al inicio.`, 'bad');
+      render();
+      return;
+    }
 
-function wrong(){
-  attempts--;
-  if(attempts <= 0){
-    feedback(`Sin intentos. Solución: ${solutionDisplay}. ${exercise.explanation}`, 'bad');
+    if(result.status === 'failed'){
+      chess = new Chess(initialPuzzleFen); step = 0; selected = null; last = []; attempts = 0;
+      render();
+      feedback(`Sin intentos. Solución: ${result.solution}. ${result.explanation}`, 'bad');
+      $('hint').textContent = 'Continuar';
+      $('hint').onclick = () => finishExercise(result);
+      return;
+    }
+
+    if(!move) throw new Error('El servidor aceptó una jugada que el tablero local no pudo reproducir.');
+    last = [move.from,move.to];
+    step++;
+    attempts = attemptsBefore;
+    feedback('¡Buena jugada! Calculando la respuesta…','good');
+    render();
+
+    if(result.opponentMove){
+      await new Promise(resolve => setTimeout(resolve,650));
+      const reply = chess.move(uciMove(result.opponentMove));
+      last = [reply.from,reply.to];
+      step++;
+      render();
+    }
+
+    if(result.status === 'continue'){
+      feedback('El rival respondió. Encontrá la continuación.','');
+      return;
+    }
+
+    if(result.stats) latestGlobalStats = result.stats;
+    if(result.award) state.pendingAchievement = result.award;
+    persist();
+    feedback(`${result.award ? result.award.title + ' ' : ''}¡Resuelto en el ${4 - attemptsBefore}.º intento! +${result.reward} ELO. ${result.explanation}`,'good');
     $('hint').textContent = 'Continuar';
-    $('hint').onclick = () => finishExercise(false);
-    return;
-  }
-  feedback(`No es la línea buscada. Te quedan ${attempts} intentos; la posición vuelve al inicio.`, 'bad');
-  setTimeout(() => { chess = new Chess(initialPuzzleFen); step = 0; selected = null; last = []; render(); }, 850);
+    $('hint').onclick = () => finishExercise(result);
+  } catch(error){
+    chess = new Chess(initialPuzzleFen); step = state.exerciseStep || 0; selected = null; last = [];
+    for(let index = 0; index < step; index++) playToken(chess,sequence[index],solutionMode);
+    render();
+    feedback(error.message,'bad');
+  } finally { movePending = false; }
 }
 
-function solved(){
-  state.wins++;
-  const exerciseReward = attempts === 3 ? 25 : attempts === 2 ? 15 : 5;
-  state.exerciseElo += exerciseReward;
-  const award = updateChessTitle();
-  if(award) state.pendingAchievement = award;
-  persist();
-  stats();
-  feedback(`${award ? award.title + ' ' : ''}¡Resuelto en el ${4 - attempts}.º intento! +${exerciseReward} ELO. ${exercise.explanation}`, 'good');
-  $('hint').textContent = 'Continuar';
-  $('hint').onclick = () => finishExercise(true);
-}
-
-function finishExercise(success){
-  state.seasonAnswers.push(success);
+function finishExercise(result){
   $('hint').textContent = 'Pedir una pista';
-  if(state.seasonAnswers.length < 2){ persist(); stats(); return route(); }
+  if(!result.seasonCompleted){ persist(); stats(); return route(); }
 
-  const completedSeason = state.season;
-  const correct = state.seasonAnswers.filter(Boolean).length;
-  const previousLevel = state.level;
-  if(correct === 2) state.level = Math.min(10, state.level + 1);
-  if(correct === 0) state.level = Math.max(0, state.level - 1);
-  const movement = state.level > previousLevel ? 'up' : state.level < previousLevel ? 'down' : 'same';
-  state.season++;
-  state.seasonAnswers = [];
-  const levelAward = updateChessTitle();
-  const award = levelAward || state.pendingAchievement;
+  const {completedSeason,correct,previousLevel,movement} = result;
+  const award = result.award || state.pendingAchievement;
   state.pendingAchievement = null;
   persist();
   stats();
@@ -288,88 +322,197 @@ function finishExercise(success){
   $('next').onclick = () => route();
 }
 
-function selectCareerEvent(){
-  if(state.currentEventId){
-    const savedEvent = careerEvents.find(event => event.id === state.currentEventId);
-    if(savedEvent) return savedEvent;
-  }
-  let eligible = careerEvents.filter(event =>
-    state.season >= event.minSeason && state.season <= event.maxSeason &&
-    state.level >= event.minLevel && state.level <= event.maxLevel &&
-    !state.eventHistory.includes(event.id)
-  );
-  if(!eligible.length){
-    eligible = careerEvents.filter(event =>
-      state.season >= event.minSeason && state.season <= event.maxSeason &&
-      state.level >= event.minLevel && state.level <= event.maxLevel
-    );
-  }
-  const selectedEvent = eligible[(state.season * 7 + state.level * 3 + state.eventHistory.length) % eligible.length];
-  state.currentEventId = selectedEvent.id;
-  persist();
-  return selectedEvent;
-}
-
-function showEvent(){
-  const event = selectCareerEvent();
+async function showEvent(){
   screens('event');
-  $('eventTag').textContent = `Temporada ${state.season} · Situación de carrera`;
-  $('eventTitle').textContent = event.title;
-  $('eventText').textContent = event.text;
   const box = $('eventChoices');
-  box.innerHTML = '';
-  event.choices.forEach(choice => {
-    const button = document.createElement('button');
-    button.innerHTML = `<b>${choice.label}</b><span>${choice.description}</span>`;
-    button.onclick = () => resolveEvent(choice);
-    box.appendChild(button);
-  });
+  box.innerHTML = '<p>El servidor está preparando la situación…</p>';
+  try {
+    const result = await serverAction('event');
+    applyServerState(result.state);
+    const event = result.event;
+    $('eventTag').textContent = `Temporada ${state.season} · Situación de carrera`;
+    $('eventTitle').textContent = event.title;
+    $('eventText').textContent = event.text;
+    box.innerHTML = '';
+    event.choices.forEach(choice => {
+      const button = document.createElement('button');
+      button.innerHTML = `<b>${choice.label}</b><span>${choice.description}</span>`;
+      button.onclick = () => resolveEvent(choice,box);
+      box.appendChild(button);
+    });
+  } catch(error){ showServerError(error); }
 }
 
-function resolveEvent(choice){
-  const success = Math.random() * 100 < choice.chance;
-  const change = success ? choice.successElo : choice.failureElo;
-  state.decisionElo += change;
-  if(state.currentEventId && !state.eventHistory.includes(state.currentEventId)) state.eventHistory.push(state.currentEventId);
-  state.currentEventId = null;
-  if(!state.eventsDone.includes(state.season)) state.eventsDone.push(state.season);
-  const award = updateChessTitle();
-  persist();
-  stats();
-  screens('result');
-  showAchievement(award);
-  $('resultTag').textContent = success ? 'La decisión funciona' : 'La carrera se complica';
-  $('resultTitle').textContent = success ? choice.successTitle : choice.failureTitle;
-  $('resultText').textContent = `${success ? choice.successText : choice.failureText} Impacto: ${change >= 0 ? '+' : ''}${change} ELO.`;
-  $('next').onclick = () => route();
+async function resolveEvent(choice,box){
+  const buttons = box.querySelectorAll('button');
+  buttons.forEach(button => button.disabled = true);
+  try {
+    const result = await serverAction('decision',{choiceId:choice.id});
+    applyServerState(result.state);
+    screens('result');
+    showAchievement(result.award);
+    $('resultTag').textContent = result.success ? 'La decisión funciona' : 'La carrera se complica';
+    $('resultTitle').textContent = result.outcome.title;
+    $('resultText').textContent = `${result.outcome.text} Impacto: ${result.change >= 0 ? '+' : ''}${result.change} ELO.`;
+    $('next').onclick = () => route();
+  } catch(error){
+    buttons.forEach(button => button.disabled = false);
+    showServerError(error);
+  }
 }
 
 function feedback(text, kind){ $('feedback').textContent = text; $('feedback').className = `feedback ${kind}`; }
 
-function ending(){
+function renderLeaderboard(globalStats){
+  const body = $('leaderboardBody');
+  body.innerHTML = '';
+  const current = globalStats?.currentPlayer;
+  const entries = [...(globalStats?.leaderboard || [])];
+  if(current && !entries.some(entry => entry.position === current.position)) entries.push(current);
+  entries.forEach(entry => {
+    const row = document.createElement('tr');
+    if(current && entry.position === current.position) row.className = 'current-player';
+    [entry.position,entry.name,entry.elo,entry.level,`${entry.decisionPositive}/${entry.decisionTotal}`,`${entry.exercisePositive}/${entry.exerciseTotal}`].forEach(value => {
+      const cell = document.createElement('td');
+      cell.textContent = value;
+      row.appendChild(cell);
+    });
+    body.appendChild(row);
+  });
+  if(!entries.length){
+    const row = document.createElement('tr');
+    const cell = document.createElement('td');
+    cell.colSpan = 6; cell.textContent = 'Todavía no hay carreras clasificadas.';
+    row.appendChild(cell); body.appendChild(row);
+  }
+}
+
+function renderHistogram(globalStats){
+  const box = $('histogram');
+  box.innerHTML = '';
+  const bins = globalStats?.histogram || [];
+  const maximum = Math.max(1,...bins.map(bin => bin.count));
+  const playerElo = globalStats?.currentPlayer?.elo;
+  bins.forEach(bin => {
+    const bar = document.createElement('div');
+    const current = playerElo >= bin.min && playerElo <= bin.max;
+    bar.className = `histogram-bar ${current ? 'current' : ''}`;
+    const count = document.createElement('strong'); count.textContent = bin.count;
+    const column = document.createElement('i'); column.style.height = `${Math.max(3,bin.count / maximum * 145)}px`;
+    const label = document.createElement('span'); label.textContent = `${bin.min}–${bin.max}`;
+    const marker = document.createElement('em'); marker.textContent = current ? 'VOS' : '';
+    bar.append(count,column,label,marker); box.appendChild(bar);
+  });
+  if(!bins.length) box.textContent = 'El histograma aparecerá cuando termine la primera carrera clasificada.';
+}
+
+function renderGlobalStats(globalStats){
+  $('participantCount').textContent = globalStats?.participants ?? '—';
+  $('careerCount').textContent = globalStats?.completedCareers ?? '—';
+  const current = globalStats?.currentPlayer;
+  if(state.debug){
+    $('playerPlacement').textContent = 'Modo debug';
+    $('playerPercentile').textContent = 'Las partidas BOCA no alteran el ranking.';
+  } else if(current){
+    $('playerPlacement').textContent = `Puesto ${current.position} de ${current.rankedPlayers}`;
+    $('playerPercentile').textContent = `Superaste al ${current.percentile}% de los jugadores clasificados.`;
+  } else {
+    $('playerPlacement').textContent = 'Sin clasificación';
+    $('playerPercentile').textContent = 'No se pudo ubicar esta carrera.';
+  }
+  renderHistogram(globalStats);
+  renderLeaderboard(globalStats);
+}
+
+function resultShareText(){
+  const position = latestGlobalStats?.currentPlayer?.position;
+  return `${displayName()} terminó Gambito Criollo con ${state.maxElo} de ELO máximo, nivel ${state.maxLevel}, ${state.decisionPositive}/${state.decisionTotal} decisiones positivas y ${state.wins}/${state.exerciseTotal} ejercicios resueltos${position ? `, en el puesto ${position} del ranking global` : ''}.`;
+}
+
+async function shareResults(){
+  const text = resultShareText();
+  $('shareFeedback').textContent = '';
+  try {
+    if(navigator.share){
+      await navigator.share({title:'Mi carrera en Gambito Criollo',text,url:location.href});
+      $('shareFeedback').textContent = 'Resultados compartidos.';
+      return;
+    }
+    await navigator.clipboard.writeText(`${text}\n${location.href}`);
+    $('shareFeedback').textContent = 'Resultado y enlace copiados. Ya podés pegarlos en tu red social.';
+  } catch(error){
+    if(error?.name !== 'AbortError') $('shareFeedback').textContent = 'No se pudo abrir el menú para compartir. Copiá el enlace desde la barra del navegador.';
+  }
+}
+
+async function ending(){
   screens('ending');
   $('endingTitle').textContent = state.level >= 10 ? 'La corona queda en casa' : state.level >= 8 ? 'Entre los mejores del mundo' : 'Una carrera con carácter';
-  $('endingText').textContent = `${displayName()} cierra diez temporadas en el nivel ${state.level}, con ${state.wins} de 20 ejercicios resueltos y ${currentElo()} de ELO.`;
+  $('endingText').textContent = `${displayName()} cierra diez temporadas en el nivel ${state.level}, con ${state.wins} de ${state.exerciseTotal} ejercicios resueltos, ${currentElo()} de ELO final y un máximo de ${state.maxElo}.`;
+  $('shareFeedback').textContent = '';
   stats();
+  try {
+    if(!latestGlobalStats){
+      const result = await serverAction('stats');
+      applyServerState(result.state);
+      latestGlobalStats = result.stats;
+    }
+    renderGlobalStats(latestGlobalStats);
+  } catch(error){
+    renderGlobalStats(null);
+    $('playerPlacement').textContent = 'Ranking no disponible';
+    $('playerPercentile').textContent = error.message;
+  }
+}
+
+function showServerError(error){
+  screens('result');
+  showAchievement(null);
+  $('resultTag').textContent = 'Conexión con el servidor';
+  $('resultTitle').textContent = 'No pudimos validar la jugada';
+  $('resultText').textContent = `${error.message} El progreso no cambió.`;
+  $('next').textContent = 'Reintentar →';
+  $('next').onclick = () => { $('next').textContent = 'Continuar →'; route(); };
 }
 
 function reset(){
   if(!confirm('¿Borrar el progreso y comenzar de nuevo?')) return;
-  localStorage.removeItem('gambito-v4');
+  localStorage.removeItem(GAME_KEY);
   location.reload();
 }
 
-$('start').onsubmit = event => {
+function playAgain(){ localStorage.removeItem(GAME_KEY); location.reload(); }
+
+$('start').onsubmit = async event => {
   event.preventDefault();
-  state.name = $('name').value.trim();
-  persist();
-  enterGame();
+  const name = $('name').value.trim();
+  const button = $('start').querySelector('button');
+  button.disabled = true; button.textContent = 'Conectando…';
+  $('startFeedback').textContent = '';
+  try {
+    const result = await serverAction('start',{name});
+    state = {...state,name,serverSessionId:result.state.id};
+    applyServerState(result.state);
+    await enterGame();
+  } catch(error){
+    $('startFeedback').textContent = error.message;
+    button.disabled = false; button.textContent = 'Empezar →';
+  }
 };
 $('reset').onclick = reset;
-$('again').onclick = reset;
+$('again').onclick = playAgain;
+$('share').onclick = shareResults;
 
-const saved = localStorage.getItem('gambito-v4');
+const saved = localStorage.getItem(GAME_KEY);
 if(saved){
-  try { state = {...state, ...JSON.parse(saved)}; if(state.name) enterGame(); }
-  catch { localStorage.removeItem('gambito-v4'); }
+  try {
+    state = {...state, ...JSON.parse(saved)};
+    if(state.name && state.serverSessionId){
+      serverAction('current').then(result => {
+        applyServerState(result.state);
+        enterGame();
+      }).catch(() => localStorage.removeItem(GAME_KEY));
+    }
+  }
+  catch { localStorage.removeItem(GAME_KEY); }
 }
