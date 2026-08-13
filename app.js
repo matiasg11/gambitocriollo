@@ -3,32 +3,20 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 import { exercises } from './exercises.js';
 import { debugExercises } from './debug-exercises.js';
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from './backend-config.js';
+import { LEVEL_STAGE_NAMES, MAX_LEVEL, MIN_LEVEL, START_LEVEL, baseElo } from './game-config.js';
+import { seasonScreen } from './season-screens.js';
 
-const seasons = [
-  'El club de barrio',
-  'Primer abierto',
-  'La liga municipal',
-  'El maestro visitante',
-  'El Torneo Nacional',
-  'Viaje al interior',
-  'Circuito federal',
-  'La élite internacional',
-  'La cima del circuito',
-  'El legado'
-];
-
-const ELO_BASE = [600,800,1200,1400,1600,2000,2200,2350,2500,2600,2750];
-const GAME_KEY = 'gambito-v5';
+const GAME_KEY = 'gambito-v6';
 const VISITOR_KEY = 'gambito-visitor-v1';
-const CLIENT_VERSION = '1.2.0';
+const CLIENT_VERSION = '1.3.0';
 const pieceName = { k:'rey', q:'dama', r:'torre', b:'alfil', n:'caballo', p:'peón' };
 const $ = id => document.getElementById(id);
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 let state = {
-  name:'', season:1, level:0, wins:0, decisionElo:0, exerciseElo:0, chessTitle:'', pendingAchievement:null,
+  name:'', season:1, level:START_LEVEL, wins:0, decisionElo:0, exerciseElo:0, chessTitle:'', pendingAchievement:null,
   eventsDone:[], introsSeen:[], seasonAnswers:[], eventHistory:[], currentEventId:null,
-  decisionPositive:0, decisionTotal:0, exerciseTotal:0, maxElo:600, maxLevel:0,
+  decisionPositive:0, decisionTotal:0, exerciseTotal:0, maxElo:baseElo(START_LEVEL), maxLevel:START_LEVEL,
   serverSessionId:null, exerciseAttempts:3, exerciseStep:0, completed:false
 };
 
@@ -74,9 +62,9 @@ function applyServerState(serverState){
 
 function isDebug(){ return state.name.trim().toUpperCase() === 'BOCA'; }
 function adjustedElo(ex){ return Math.round(ex.rating * 1.5); }
-function currentElo(){ return ELO_BASE[state.level] + state.decisionElo + state.exerciseElo; }
+function currentElo(){ return baseElo(state.level) + state.decisionElo + state.exerciseElo; }
 function displayName(){ return `${state.chessTitle ? state.chessTitle + ' ' : ''}${state.name}`; }
-function stageName(){ return state.level === 10 ? 'Defendé la corona' : state.level === 9 ? 'Campeonato del Mundo' : state.level === 8 ? 'Torneo de Candidatos' : seasons[state.season - 1]; }
+function stageName(){ return LEVEL_STAGE_NAMES[state.level] ?? seasonScreen(state.season).title; }
 function persist(){ localStorage.setItem(GAME_KEY, JSON.stringify(state)); }
 function screens(active){ ['intro','puzzle','event','result','ending'].forEach(id => $(id).hidden = id !== active); }
 
@@ -99,7 +87,7 @@ function stats(){
   $('elo').textContent = currentElo();
   $('wins').textContent = state.wins;
   $('level').textContent = state.level;
-  $('eloBreakdown').textContent = `Base ${ELO_BASE[state.level]} · Decisiones ${state.decisionElo >= 0 ? '+' : ''}${state.decisionElo} · Ejercicios +${state.exerciseElo}`;
+  $('eloBreakdown').textContent = `Base ${baseElo(state.level)} · Decisiones ${state.decisionElo >= 0 ? '+' : ''}${state.decisionElo} · Ejercicios +${state.exerciseElo}`;
   $('debugBadge').hidden = !isDebug();
   const done = state.seasonAnswers.length;
   $('seasonProgress').textContent = `${done}/2`;
@@ -116,7 +104,7 @@ async function enterGame(){
 
 function getSeasonExercises(){
   const source = isDebug() ? debugExercises : exercises;
-  const exerciseLevel = Math.max(1, state.level);
+  const exerciseLevel = state.level;
   const pool = source.filter(item => item.level === exerciseLevel);
   const offset = ((state.season - 1) * 2) % pool.length;
   return [pool[offset], pool[(offset + 1) % pool.length]];
@@ -127,8 +115,9 @@ async function route(){
   if(!state.introsSeen.includes(state.season)){
     screens('intro');
     $('chapter').textContent = `Temporada ${state.season} · Nivel actual ${state.level}`;
+    const screen = seasonScreen(state.season);
     $('introTitle').textContent = stageName();
-    $('introText').textContent = `Esta temporada tiene un dilema y dos ejercicios de nivel ${state.level}. Dos aciertos te hacen subir; uno te mantiene; dos fallos te hacen bajar.`;
+    $('introText').textContent = `${screen.text} Esta temporada tiene un dilema y dos ejercicios de nivel ${state.level}. Dos aciertos te hacen subir; uno te mantiene; dos fallos te hacen bajar.`;
     $('continue').onclick = () => { state.introsSeen.push(state.season); persist(); route(); };
     return;
   }
@@ -318,7 +307,7 @@ function finishExercise(result){
   showAchievement(award);
   $('resultTag').textContent = `Temporada ${completedSeason} completada · ${correct}/2 correctos`;
   $('resultTitle').textContent = movement === 'up' ? `Subís al nivel ${state.level}` : movement === 'down' ? `Bajás al nivel ${state.level}` : `Te mantenés en el nivel ${state.level}`;
-  $('resultText').textContent = correct === 2 ? 'Resolviste los dos ejercicios y avanzás un escalón.' : correct === 1 ? 'Un acierto y un fallo: conservás tu nivel para la próxima temporada.' : previousLevel === 0 ? 'Fallaste ambos ejercicios, pero el nivel 0 es el piso de la carrera.' : 'Los dos ejercicios quedaron sin resolver y retrocedés un nivel.';
+  $('resultText').textContent = correct === 2 && previousLevel < MAX_LEVEL ? 'Resolviste los dos ejercicios y avanzás un escalón.' : correct === 2 ? 'Resolviste los dos ejercicios y revalidás tu lugar en la cima.' : correct === 1 ? 'Un acierto y un fallo: conservás tu nivel para la próxima temporada.' : previousLevel === MIN_LEVEL ? `Fallaste ambos ejercicios, pero el nivel ${MIN_LEVEL} es el piso de la carrera.` : 'Los dos ejercicios quedaron sin resolver y retrocedés un nivel.';
   $('next').onclick = () => route();
 }
 

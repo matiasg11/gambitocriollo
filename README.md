@@ -6,7 +6,7 @@ Juego narrativo de carrera ajedrecística con 10 temporadas, un dilema por tempo
 
 - 2 ejercicios correctos: sube un nivel.
 - 1 correcto: mantiene el nivel.
-- 0 correctos: baja un nivel, excepto cuando ya está en nivel 0.
+- 0 correctos: baja un nivel, excepto cuando ya está en nivel 1.
 - El ELO mostrado para cada ejercicio es el rating de origen multiplicado por 1,5.
 
 Cada ejercicio resuelto también aporta ELO acumulativo:
@@ -20,19 +20,20 @@ La fórmula completa es `ELO base del nivel + saldo de decisiones + ELO ganado e
 
 | Nivel | ELO base |
 |---:|---:|
-| 0 | 600 |
-| 1 | 800 |
-| 2 | 1200 |
-| 3 | 1400 |
-| 4 | 1600 |
-| 5 | 2000 |
-| 6 | 2200 |
-| 7 | 2350 |
-| 8 | 2500 |
-| 9 | 2600 |
-| 10 | 2750 |
+| 1 | 600 |
+| 2 | 800 |
+| 3 | 1000 |
+| 4 | 1200 |
+| 5 | 1400 |
+| 6 | 1600 |
+| 7 | 1800 |
+| 8 | 1900 |
+| 9 | 2000 |
+| 10 | 2200 |
 
 Los nombres **Torneo de Candidatos**, **Campeonato del Mundo** y **Defendé la corona** aparecen únicamente cuando el jugador está en los niveles 8, 9 y 10, respectivamente.
+
+La carrera comienza en nivel 1. Si el jugador resuelve todo correctamente, alcanza el nivel 10 al terminar la temporada 9 y disputa la temporada 10 para revalidar la corona.
 
 Al superar 2300 de ELO se obtiene permanentemente el título **FM**; al superar 2400 se reemplaza por **IM** y al superar 2500 por **GM**. Los títulos no se pierden aunque luego baje el ELO.
 
@@ -51,6 +52,35 @@ Los datos se guardan en Supabase mediante las migraciones de `supabase/migration
 ## Situaciones
 
 Las 20 situaciones de carrera están en `career-events.js`. Cada una declara temporadas y niveles permitidos. La guía para agregar nuevas situaciones está en `SITUACIONES.md`.
+
+## Banco de ejercicios
+
+El banco normal contiene 1.000 puzzles de la [base abierta de Lichess](https://database.lichess.org/#puzzles), publicada con licencia CC0: 100 ejercicios para cada nivel.
+
+Los rangos de rating original están en `EXERCISE_RATING_RANGES`, dentro de `game-config.js`. La selección importada y sus metadatos quedan en `data/lichess_exercises_1000.json`; el juego carga la versión compacta de `exercises.js`.
+
+Para regenerar el banco, descargá `lichess_db_puzzle.csv.zst` dentro de `data` y ejecutá `scripts/import-lichess-puzzles.mjs` con Node. El importador exige popularidad mínima 80, al menos 50 partidas y desviación de rating máxima 100.
+
+## Datos simulados del ranking
+
+`scripts/seed-ranking-simulations.sql` genera de forma determinista 1.000 carreras ficticias completas. Los jugadores se llaman `SIM-0001` a `SIM-1000` y llevan `client_version = 'simulation-ranking-v1'` para no confundirlos con personas reales.
+
+Para retirar solamente ese lote de prueba usá `scripts/clear-ranking-simulations.sql`. Las partidas reales no se eliminan.
+
+## Edición manual
+
+- Pisos de ELO y nombres especiales de los niveles: `game-config.js`.
+- Título y texto de cada pantalla de temporada: `season-screens.js`.
+- Dilemas, probabilidades, impactos y resultados: `career-events.js`.
+- Explicación completa de cada campo de los dilemas: `SITUACIONES.md`.
+
+Después de editar `game-config.js` o `career-events.js`, ejecutá:
+
+```powershell
+powershell -File scripts/sync-game-data.ps1
+```
+
+Esto actualiza la copia que usa el validador de Supabase. Después hay que volver a desplegar la función `game-api` y publicar la web.
 
 ## Modo debug
 

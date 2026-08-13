@@ -1,3 +1,4 @@
 work/
+data/lichess_db_puzzle.csv.zst
 .DS_Store
 Thumbs.db
