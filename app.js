@@ -1,20 +1,24 @@
 import { Chess } from 'https://cdn.jsdelivr.net/npm/chess.js@1.4.0/+esm';
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+import html2canvas from 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm';
 import { exercises } from './exercises.js';
 import { debugExercises } from './debug-exercises.js';
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from './backend-config.js';
-import { LEVEL_STAGE_NAMES, MAX_LEVEL, MIN_LEVEL, START_LEVEL, baseElo } from './game-config.js';
+import { MAX_LEVEL, MIN_LEVEL, START_LEVEL, baseElo, levelStageName } from './game-config.js';
 import { seasonScreen } from './season-screens.js';
 
 const GAME_KEY = 'gambito-v6';
 const VISITOR_KEY = 'gambito-visitor-v1';
-const CLIENT_VERSION = '1.3.0';
+const CLIENT_VERSION = '1.4.0';
+const SHARE_TEXT = 'Jugué el Gambito Criollo de Ciencia del Fin del Mundo y así me fue';
+const GAME_URL = 'https://matiasg11.github.io/gambitocriollo/';
 const pieceName = { k:'rey', q:'dama', r:'torre', b:'alfil', n:'caballo', p:'peón' };
 const $ = id => document.getElementById(id);
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 let state = {
-  name:'', season:1, level:START_LEVEL, wins:0, decisionElo:0, exerciseElo:0, chessTitle:'', pendingAchievement:null,
+  name:'', season:1, level:START_LEVEL, wins:0, decisionElo:0, exerciseElo:0, chessTitle:'',
+  achievements:[], pendingAchievements:[], pendingAchievement:null,
   eventsDone:[], introsSeen:[], seasonAnswers:[], eventHistory:[], currentEventId:null,
   decisionPositive:0, decisionTotal:0, exerciseTotal:0, maxElo:baseElo(START_LEVEL), maxLevel:START_LEVEL,
   serverSessionId:null, exerciseAttempts:3, exerciseStep:0, completed:false
@@ -33,6 +37,8 @@ let solutionDisplay = '';
 let initialPuzzleFen = '';
 let movePending = false;
 let latestGlobalStats = null;
+let endingScreenshotFile = null;
+let endingScreenshotPromise = null;
 
 async function serverAction(action, values = {}){
   const visitorToken = localStorage.getItem(VISITOR_KEY);
@@ -53,7 +59,12 @@ async function serverAction(action, values = {}){
 
 function applyServerState(serverState){
   if(!serverState) return;
-  const localOnly = {introsSeen:state.introsSeen,pendingAchievement:state.pendingAchievement};
+  const localOnly = {
+    introsSeen:state.introsSeen,
+    achievements:state.achievements,
+    pendingAchievements:state.pendingAchievements,
+    pendingAchievement:state.pendingAchievement,
+  };
   state = {...state,...serverState,...localOnly,serverSessionId:serverState.id};
   attempts = state.exerciseAttempts ?? attempts;
   persist();
@@ -64,7 +75,14 @@ function isDebug(){ return state.name.trim().toUpperCase() === 'BOCA'; }
 function adjustedElo(ex){ return Math.round(ex.rating * 1.5); }
 function currentElo(){ return baseElo(state.level) + state.decisionElo + state.exerciseElo; }
 function displayName(){ return `${state.chessTitle ? state.chessTitle + ' ' : ''}${state.name}`; }
-function stageName(){ return LEVEL_STAGE_NAMES[state.level] ?? seasonScreen(state.season).title; }
+function stageName(){ return levelStageName(state.season,state.level) ?? seasonScreen(state.season).title; }
+function safeSpotifyUrl(value){
+  try {
+    const url = new URL(String(value || ''));
+    const hostname = url.hostname.toLowerCase();
+    return url.protocol === 'https:' && (hostname === 'open.spotify.com' || hostname === 'spotify.link') ? url.href : '';
+  } catch { return ''; }
+}
 function persist(){ localStorage.setItem(GAME_KEY, JSON.stringify(state)); }
 function screens(active){ ['intro','puzzle','event','result','ending'].forEach(id => $(id).hidden = id !== active); }
 
@@ -73,11 +91,45 @@ function updatePeaks(){
   state.maxLevel = Math.max(Number(state.maxLevel) || 0, state.level);
 }
 
-function showAchievement(award){
-  $('achievement').hidden = !award;
-  if(!award) return;
-  $('achievementTitle').textContent = award.title;
-  $('achievementText').textContent = award.text;
+function normalizeAchievements(value){
+  const entries = Array.isArray(value) ? value : value ? [value] : [];
+  return entries.filter(entry => entry?.title && entry?.text);
+}
+
+function achievementKey(entry){ return entry.id || `${entry.title}:${entry.text}`; }
+
+function achievementsFromResult(result){
+  return normalizeAchievements(result?.achievements?.length ? result.achievements : result?.award);
+}
+
+function recordAchievements(value){
+  const known = new Set(normalizeAchievements(state.achievements).map(achievementKey));
+  const added = [];
+  normalizeAchievements(value).forEach(entry => {
+    const key = achievementKey(entry);
+    if(known.has(key)) return;
+    known.add(key);
+    added.push(entry);
+  });
+  state.achievements = [...normalizeAchievements(state.achievements),...added];
+  return added;
+}
+
+function showAchievements(value){
+  const awards = normalizeAchievements(value);
+  const box = $('achievement');
+  const list = $('achievementList');
+  box.hidden = !awards.length;
+  list.innerHTML = '';
+  awards.forEach(entry => {
+    const card = document.createElement('article');
+    const title = document.createElement('strong');
+    const description = document.createElement('span');
+    title.textContent = entry.title;
+    description.textContent = entry.text;
+    card.append(title,description);
+    list.appendChild(card);
+  });
 }
 
 function stats(){
@@ -251,6 +303,11 @@ async function tap(squareName){
       return;
     }
 
+    if(result.stats) latestGlobalStats = result.stats;
+    const earnedNow = recordAchievements(achievementsFromResult(result));
+    if(earnedNow.length) state.pendingAchievements = [...normalizeAchievements(state.pendingAchievements),...earnedNow];
+    persist();
+
     if(result.status === 'failed'){
       chess = new Chess(initialPuzzleFen); step = 0; selected = null; last = []; attempts = 0;
       render();
@@ -280,10 +337,8 @@ async function tap(squareName){
       return;
     }
 
-    if(result.stats) latestGlobalStats = result.stats;
-    if(result.award) state.pendingAchievement = result.award;
-    persist();
-    feedback(`${result.award ? result.award.title + ' ' : ''}¡Resuelto en el ${4 - attemptsBefore}.º intento! +${result.reward} ELO. ${result.explanation}`,'good');
+    const earnedLabel = earnedNow.length ? `${earnedNow.map(entry => entry.title).join(' · ')}. ` : '';
+    feedback(`${earnedLabel}¡Resuelto en el ${4 - attemptsBefore}.º intento! +${result.reward} ELO. ${result.explanation}`,'good');
     $('hint').textContent = 'Continuar';
     $('hint').onclick = () => finishExercise(result);
   } catch(error){
@@ -299,12 +354,14 @@ function finishExercise(result){
   if(!result.seasonCompleted){ persist(); stats(); return route(); }
 
   const {completedSeason,correct,previousLevel,movement} = result;
-  const award = result.award || state.pendingAchievement;
+  const awards = normalizeAchievements(state.pendingAchievements);
+  if(state.pendingAchievement) awards.push(...recordAchievements(state.pendingAchievement));
+  state.pendingAchievements = [];
   state.pendingAchievement = null;
   persist();
   stats();
   screens('result');
-  showAchievement(award);
+  showAchievements(awards);
   $('resultTag').textContent = `Temporada ${completedSeason} completada · ${correct}/2 correctos`;
   $('resultTitle').textContent = movement === 'up' ? `Subís al nivel ${state.level}` : movement === 'down' ? `Bajás al nivel ${state.level}` : `Te mantenés en el nivel ${state.level}`;
   $('resultText').textContent = correct === 2 && previousLevel < MAX_LEVEL ? 'Resolviste los dos ejercicios y avanzás un escalón.' : correct === 2 ? 'Resolviste los dos ejercicios y revalidás tu lugar en la cima.' : correct === 1 ? 'Un acierto y un fallo: conservás tu nivel para la próxima temporada.' : previousLevel === MIN_LEVEL ? `Fallaste ambos ejercicios, pero el nivel ${MIN_LEVEL} es el piso de la carrera.` : 'Los dos ejercicios quedaron sin resolver y retrocedés un nivel.';
@@ -315,6 +372,10 @@ async function showEvent(){
   screens('event');
   const box = $('eventChoices');
   box.innerHTML = '<p>El servidor está preparando la situación…</p>';
+  $('eventLongText').textContent = '';
+  $('eventLongText').hidden = true;
+  $('eventSpotify').hidden = true;
+  $('eventSpotify').removeAttribute('href');
   try {
     const result = await serverAction('event');
     applyServerState(result.state);
@@ -322,6 +383,17 @@ async function showEvent(){
     $('eventTag').textContent = `Temporada ${state.season} · Situación de carrera`;
     $('eventTitle').textContent = event.title;
     $('eventText').textContent = event.text;
+    const longText = String(event.longText || '').trim();
+    $('eventLongText').textContent = longText;
+    $('eventLongText').hidden = !longText;
+    const spotifyUrl = safeSpotifyUrl(event.spotifyUrl);
+    $('eventSpotify').hidden = !spotifyUrl;
+    if(spotifyUrl){
+      $('eventSpotify').href = spotifyUrl;
+      $('eventSpotify').textContent = event.spotifyLabel || 'Escuchar la columna de Ciencia del Fin del Mundo en Spotify ↗';
+    } else {
+      $('eventSpotify').removeAttribute('href');
+    }
     box.innerHTML = '';
     event.choices.forEach(choice => {
       const button = document.createElement('button');
@@ -338,8 +410,10 @@ async function resolveEvent(choice,box){
   try {
     const result = await serverAction('decision',{choiceId:choice.id});
     applyServerState(result.state);
+    const awards = recordAchievements(achievementsFromResult(result));
+    persist();
     screens('result');
-    showAchievement(result.award);
+    showAchievements(awards);
     $('resultTag').textContent = result.success ? 'La decisión funciona' : 'La carrera se complica';
     $('resultTitle').textContent = result.outcome.title;
     $('resultText').textContent = `${result.outcome.text} Impacto: ${result.change >= 0 ? '+' : ''}${result.change} ELO.`;
@@ -413,33 +487,112 @@ function renderGlobalStats(globalStats){
   renderLeaderboard(globalStats);
 }
 
-function resultShareText(){
-  const position = latestGlobalStats?.currentPlayer?.position;
-  return `${displayName()} terminó Gambito Criollo con ${state.maxElo} de ELO máximo, nivel ${state.maxLevel}, ${state.decisionPositive}/${state.decisionTotal} decisiones positivas y ${state.wins}/${state.exerciseTotal} ejercicios resueltos${position ? `, en el puesto ${position} del ranking global` : ''}.`;
+function renderFinalAchievements(){
+  const awards = normalizeAchievements(state.achievements);
+  const list = $('finalAchievements');
+  list.innerHTML = '';
+  $('achievementCount').textContent = `${awards.length} ${awards.length === 1 ? 'distinción' : 'distinciones'}`;
+  if(!awards.length){
+    const empty = document.createElement('p');
+    empty.className = 'achievement-empty';
+    empty.textContent = 'Tu próximo recorrido puede abrir este palmarés.';
+    list.appendChild(empty);
+    return;
+  }
+  awards.forEach(entry => {
+    const card = document.createElement('article');
+    const title = document.createElement('strong');
+    const description = document.createElement('span');
+    title.textContent = entry.title;
+    description.textContent = entry.text;
+    card.append(title,description);
+    list.appendChild(card);
+  });
+}
+
+function canvasBlob(canvas){
+  return new Promise((resolve,reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('La captura quedó vacía.')), 'image/png'));
+}
+
+async function prepareEndingScreenshot(){
+  if(endingScreenshotPromise) return endingScreenshotPromise;
+  const button = $('share');
+  endingScreenshotFile = null;
+  button.disabled = true;
+  button.textContent = 'Preparando captura…';
+  delete button.dataset.screenshotReady;
+  endingScreenshotPromise = (async () => {
+    if(document.fonts?.ready) await document.fonts.ready;
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const background = getComputedStyle(document.body).backgroundColor || '#f3ead7';
+    const canvas = await html2canvas($('ending'), {
+      backgroundColor: background,
+      scale: Math.min(2,window.devicePixelRatio || 1),
+      useCORS: true,
+      logging: false,
+      scrollX: 0,
+      scrollY: -window.scrollY,
+    });
+    const blob = await canvasBlob(canvas);
+    endingScreenshotFile = new File([blob], 'gambito-criollo-resultado.png', {type:'image/png'});
+    button.dataset.screenshotReady = 'true';
+    return endingScreenshotFile;
+  })().catch(error => {
+    console.error('No se pudo preparar la captura final.',error);
+    $('shareFeedback').textContent = 'No pudimos preparar la captura. Podés volver a intentar compartir.';
+    endingScreenshotPromise = null;
+    return null;
+  }).finally(() => {
+    button.disabled = false;
+    button.textContent = 'Compartir resultados';
+  });
+  return endingScreenshotPromise;
+}
+
+function downloadScreenshot(file){
+  const url = URL.createObjectURL(file);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = file.name;
+  link.hidden = true;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url),1000);
 }
 
 async function shareResults(){
-  const text = resultShareText();
   $('shareFeedback').textContent = '';
   try {
-    if(navigator.share){
-      await navigator.share({title:'Mi carrera en Gambito Criollo',text,url:location.href});
-      $('shareFeedback').textContent = 'Resultados compartidos.';
+    const file = endingScreenshotFile;
+    if(!file){
+      $('shareFeedback').textContent = 'La captura todavía se está preparando. Probá nuevamente en un instante.';
+      prepareEndingScreenshot();
       return;
     }
-    await navigator.clipboard.writeText(`${text}\n${location.href}`);
-    $('shareFeedback').textContent = 'Resultado y enlace copiados. Ya podés pegarlos en tu red social.';
+    const shareData = {title:'Gambito Criollo',text:SHARE_TEXT,url:GAME_URL,files:[file]};
+    if(navigator.share && navigator.canShare?.({files:[file]})){
+      await navigator.share(shareData);
+      $('shareFeedback').textContent = 'Captura, texto y enlace compartidos.';
+      return;
+    }
+    downloadScreenshot(file);
+    await navigator.clipboard.writeText(`${SHARE_TEXT}\n${GAME_URL}`);
+    $('shareFeedback').textContent = 'Descargamos la captura y copiamos el texto con el enlace. Adjuntá la imagen en tu red social.';
   } catch(error){
-    if(error?.name !== 'AbortError') $('shareFeedback').textContent = 'No se pudo abrir el menú para compartir. Copiá el enlace desde la barra del navegador.';
+    if(error?.name !== 'AbortError') $('shareFeedback').textContent = 'No se pudo compartir. Probá nuevamente o guardá la captura desde otro navegador.';
   }
 }
 
 async function ending(){
   screens('ending');
+  endingScreenshotFile = null;
+  endingScreenshotPromise = null;
   $('endingTitle').textContent = state.level >= 10 ? 'La corona queda en casa' : state.level >= 8 ? 'Entre los mejores del mundo' : 'Una carrera con carácter';
   $('endingText').textContent = `${displayName()} cierra diez temporadas en el nivel ${state.level}, con ${state.wins} de ${state.exerciseTotal} ejercicios resueltos, ${currentElo()} de ELO final y un máximo de ${state.maxElo}.`;
   $('shareFeedback').textContent = '';
   stats();
+  renderFinalAchievements();
   try {
     if(!latestGlobalStats){
       const result = await serverAction('stats');
@@ -452,11 +605,12 @@ async function ending(){
     $('playerPlacement').textContent = 'Ranking no disponible';
     $('playerPercentile').textContent = error.message;
   }
+  await prepareEndingScreenshot();
 }
 
 function showServerError(error){
   screens('result');
-  showAchievement(null);
+  showAchievements([]);
   $('resultTag').textContent = 'Conexión con el servidor';
   $('resultTitle').textContent = 'No pudimos validar la jugada';
   $('resultText').textContent = `${error.message} El progreso no cambió.`;

@@ -12,7 +12,11 @@ Todas las situaciones se guardan en `career-events.js`. La aplicación filtra el
   minLevel: 1,
   maxLevel: 3,
   title: 'Título del dilema',
-  text: 'Descripción de la situación',
+  text: 'Resumen breve de la situación',
+  longText: `Desarrollo largo opcional del dilema.
+Podés escribir varios párrafos o líneas para dar contexto histórico, político o ajedrecístico.`,
+  spotifyUrl: 'https://open.spotify.com/episode/ID-DEL-EPISODIO',
+  spotifyLabel: 'Escuchar la columna en Ciencia del Fin del Mundo',
   choices: [
     {
       id: 'opcion-a',
@@ -31,6 +35,15 @@ Todas las situaciones se guardan en `career-events.js`. La aplicación filtra el
 ```
 
 `chance` es un porcentaje interno de 0 a 100 y no se muestra durante la elección. Los puntos `successElo` y `failureElo` se acumulan durante toda la carrera sobre el ELO base del nivel.
+
+## Texto largo y columna de Spotify
+
+- `text` es el resumen que aparece primero y conviene que tenga una o dos oraciones.
+- `longText` es opcional. Puede ser una cadena normal o usar comillas invertidas para escribir varias líneas. Se muestra debajo del resumen y conserva los saltos de línea.
+- `spotifyUrl` es opcional. Por seguridad, el juego solo acepta enlaces HTTPS de `open.spotify.com` y `spotify.link`.
+- `spotifyLabel` es opcional. Si lo omitís, el botón dice **Escuchar la columna de Ciencia del Fin del Mundo en Spotify**.
+
+Si no querés texto largo o audio en un dilema, podés omitir esos campos por completo.
 
 ## Disponibilidad
 
