@@ -1,0 +1,4 @@
+project_id = "gambito-criollo"
+
+[functions.game-api]
+verify_jwt = false
