@@ -11,9 +11,9 @@ Juego narrativo de carrera ajedrecística con 10 temporadas, un dilema por tempo
 
 Cada ejercicio resuelto también aporta ELO acumulativo:
 
-- Primer intento: +12 ELO.
-- Segundo intento: +6 ELO.
-- Tercer intento: +3 ELO.
+- Primer intento: +8 ELO.
+- Segundo intento: +4 ELO.
+- Tercer intento: +2 ELO.
 - Sin resolver: +0 ELO.
 
 La fórmula completa parte de `ELO base del nivel + saldo de decisiones + ELO ganado en ejercicios` y limita el resultado a la banda mínima y máxima del nivel.
@@ -49,9 +49,9 @@ Cada decisión suma o resta una cantidad aleatoria dentro de un margen de ±5 pu
 
 La pantalla final consulta un ranking global con la mejor carrera de cada participante. Incluye nombre, ELO y nivel máximos, decisiones positivas, ejercicios resueltos, cantidad de participantes, cantidad de carreras terminadas, posición, percentil e histograma de ELO.
 
-También muestra el **Palmarés** conseguido durante la partida. Hay logros por elecciones especiales, ejercicios, decisiones favorables, temporadas perfectas, niveles, títulos oficiales y finalización de la carrera. La lista y la guía de edición están en `LOGROS.md`; el catálogo editable está en `achievements.js` y no requiere modificar los dilemas.
+También muestra los **Logros** conseguidos durante la partida, guardados dentro de un acordeón para no desplazar el resumen principal. Hay logros por elecciones especiales, ejercicios, decisiones favorables, temporadas perfectas, niveles, títulos oficiales y finalización de la carrera. La lista y la guía de edición están en `LOGROS.md`; el catálogo editable está en `achievements.js` y no requiere modificar los dilemas.
 
-El botón para compartir prepara una captura PNG de la pantalla final. En dispositivos con soporte para compartir archivos envía la imagen junto con el texto “Jugué el Gambito Criollo de Ciencia del Fin del Mundo y así me fue” y el enlace del juego. En los demás navegadores descarga la captura y copia el texto con el enlace para pegarlo en una red social.
+El botón para compartir prepara una tarjeta PNG compacta con el título FM/IM/GM, ejercicios, decisiones y ELO. En dispositivos compatibles envía la imagen junto con un resumen personalizado y el enlace del juego. En los demás navegadores descarga la captura y copia ese mismo texto para pegarlo en una red social.
 
 ## Validación y ranking
 
@@ -65,9 +65,9 @@ Los datos se guardan en Supabase mediante las migraciones de `supabase/migration
 
 ## Situaciones
 
-Las 22 situaciones de carrera están en `career-events.js`. Cada una declara temporadas y niveles permitidos y puede incluir un desarrollo largo más un enlace a una columna de Ciencia del Fin del Mundo en Spotify. El presorteo respeta esos cuatro límites y conserva un orden de suplentes para evitar repetir un dilema durante una carrera. La guía para agregar nuevas situaciones está en `SITUACIONES.md`.
+Las 24 situaciones de carrera están en `career-events.js`. Cada una declara temporadas y niveles permitidos y puede incluir un desarrollo largo más un enlace a una columna de Ciencia del Fin del Mundo en Spotify. El presorteo respeta esos cuatro límites y conserva un orden de suplentes para evitar repetir un dilema durante una carrera. La guía para agregar nuevas situaciones está en `SITUACIONES.md`.
 
-La temporada 10 usa siempre el dilema marcado con `finalOnly: true`. La oferta de trampa puede fijar `maxLevelOnChoose: 6`: el servidor guarda esa decisión y bloquea permanentemente los ascensos por encima del nivel 6. El navegador precarga el dilema durante la introducción y apenas termina la temporada anterior.
+Después de resolver los dos ejercicios de la temporada 10, el servidor elige uno de los dilemas marcados con `finalOnly: true`. La carrera y el ranking se cierran recién al tomar esa última decisión. La oferta de trampa puede fijar `maxLevelOnChoose: 6`: el servidor guarda esa decisión y bloquea permanentemente los ascensos por encima del nivel 6. El navegador precarga los dilemas normales durante la introducción y apenas termina la temporada anterior.
 
 ## Banco de ejercicios
 

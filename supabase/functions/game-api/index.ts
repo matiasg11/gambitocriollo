@@ -149,7 +149,7 @@ function publicSession(session: Session) {
     exerciseAttempts: session.exercise_attempts,
     exerciseStep: session.exercise_step,
     currentElo: currentElo(session),
-    completed: Boolean(session.completed_at) || session.season > 10,
+    completed: Boolean(session.completed_at),
     clientVersion: session.client_version,
   };
 }
@@ -202,10 +202,11 @@ function eligibleEventsFor(season: number, level: number) {
     season >= event.minSeason && season <= event.maxSeason &&
     level >= event.minLevel && level <= event.maxLevel
   );
-  const finalEvents = eligible.filter((event: any) => event.finalOnly);
-  return season === 10 && finalEvents.length
-    ? finalEvents
-    : eligible.filter((event: any) => !event.finalOnly);
+  return eligible.filter((event: any) => !event.finalOnly);
+}
+
+function finalEvents() {
+  return careerEvents.filter((event: any) => event.finalOnly);
 }
 
 function eligibleEvents(session: Session) {
@@ -467,7 +468,6 @@ async function completeExercise(admin: any, session: Session, success: boolean, 
     changes.level = nextLevel;
     changes.season = session.season + 1;
     changes.season_answers = [];
-    if (changes.season > 10) changes.completed_at = new Date().toISOString();
   }
 
   const titleAward = enrichProgress(session, changes);
@@ -478,10 +478,8 @@ async function completeExercise(admin: any, session: Session, success: boolean, 
     success && session.wins < 20 && changes.wins >= 20 ? milestoneAchievement('twenty-exercises') : null,
     seasonCompleted && correct === 2 ? milestoneAchievement('perfect-season') : null,
     seasonCompleted && changes.level > previousLevel ? milestoneAchievement(`level-${changes.level}`) : null,
-    seasonCompleted && changes.season > 10 ? milestoneAchievement('career-complete') : null,
   ]);
   const updated = await casUpdate(admin, session, changes);
-  if (updated.completed_at) await registerResult(admin, updated);
   return {
     updated,
     award: achievements[0] ?? null,
@@ -553,10 +551,25 @@ Deno.serve(async (request) => {
       if (session.completed_at || session.season > 10) throw new ApiError(409, 'La carrera ya terminó.');
       if (session.events_done.includes(session.season)) throw new ApiError(409, 'La decisión de esta temporada ya fue tomada.');
       let event = session.current_event_id
-        ? careerEvents.find((candidate: any) => candidate.id === session.current_event_id)
+        ? eligibleEvents(session).find((candidate: any) => candidate.id === session.current_event_id)
         : null;
       if (!event) {
         event = chooseEvent(session);
+        session = await casUpdate(admin, session, { current_event_id: event.id });
+      }
+      return response(request, { ok: true, event: publicEvent(event), state: publicSession(session) });
+    }
+
+    if (action === 'final-event') {
+      if (session.completed_at) throw new ApiError(409, 'La carrera ya terminó.');
+      if (session.season !== 11) throw new ApiError(409, 'El dilema final aparece después de completar la temporada 10.');
+      let event = session.current_event_id
+        ? finalEvents().find((candidate: any) => candidate.id === session.current_event_id)
+        : null;
+      if (!event) {
+        const candidates = finalEvents();
+        if (!candidates.length) throw new ApiError(422, 'No hay dilemas finales configurados.');
+        event = shuffled(candidates)[0];
         session = await casUpdate(admin, session, { current_event_id: event.id });
       }
       return response(request, { ok: true, event: publicEvent(event), state: publicSession(session) });
@@ -568,7 +581,11 @@ Deno.serve(async (request) => {
       }
       const event = careerEvents.find((candidate: any) => candidate.id === session.current_event_id);
       const choice = event?.choices.find((candidate: any) => candidate.id === payload.choiceId);
-      if (!event || !choice || !eligibleEvents(session).some((candidate: any) => candidate.id === event.id)) {
+      const finalEvent = Boolean(event?.finalOnly);
+      const eventIsValid = finalEvent
+        ? session.season === 11 && !session.completed_at
+        : eligibleEvents(session).some((candidate: any) => candidate.id === event?.id);
+      if (!event || !choice || !eventIsValid) {
         throw new ApiError(422, 'La alternativa no corresponde a la situación actual.');
       }
       const success = chanceSucceeds(choice.chance);
@@ -587,6 +604,7 @@ Deno.serve(async (request) => {
         changes.cheating_accepted = true;
         changes.level = Math.min(session.level, choice.maxLevelOnChoose);
       }
+      if (finalEvent) changes.completed_at = new Date().toISOString();
       const titleAward = enrichProgress(session, changes);
       const positiveBefore = session.decision_positive;
       const positiveAfter = changes.decision_positive;
@@ -596,8 +614,10 @@ Deno.serve(async (request) => {
         success && positiveBefore < 1 && positiveAfter >= 1 ? milestoneAchievement('first-positive-decision') : null,
         success && positiveBefore < 5 && positiveAfter >= 5 ? milestoneAchievement('five-positive-decisions') : null,
         success && positiveBefore < 10 && positiveAfter >= 10 ? milestoneAchievement('ten-positive-decisions') : null,
+        finalEvent ? milestoneAchievement('career-complete') : null,
       ]);
       session = await casUpdate(admin, session, changes);
+      if (session.completed_at) await registerResult(admin, session);
       return response(request, {
         ok: true, success, change, baseChange,
         award: achievements[0] ?? null,
@@ -672,7 +692,7 @@ Deno.serve(async (request) => {
         });
       }
 
-      const reward = session.exercise_attempts === 3 ? 12 : session.exercise_attempts === 2 ? 6 : 3;
+      const reward = session.exercise_attempts === 3 ? 8 : session.exercise_attempts === 2 ? 4 : 2;
       const completed = await completeExercise(admin, session, true, reward);
       return response(request, {
         ok: true, status: 'solved', opponentMove, reward,
