@@ -1,6 +1,6 @@
 # Situaciones de carrera
 
-Todas las situaciones se guardan en `career-events.js`. La aplicación filtra el catálogo según la temporada y el nivel actuales, y luego elige una situación que todavía no haya aparecido en esa carrera.
+Todas las situaciones se guardan en `career-events.js`. Al iniciar una carrera, el servidor filtra el catálogo para cada combinación posible de temporada y nivel y guarda un orden sorteado de situaciones válidas. Al llegar a cada casillero usa la primera que todavía no haya aparecido en esa carrera.
 
 ## Campos principales
 
@@ -80,6 +80,8 @@ Para agregar una situación, copiá uno de los objetos de `career-events.js`, as
 | `match-conditions` | Las condiciones del match | 8–10 | 8–10 |
 
 ## Después de editar
+
+Las carreras ya iniciadas conservan los IDs y el orden de su presorteo. Si editás el texto, los parámetros o las alternativas de una situación sin cambiar su `id`, ese cambio aparece donde el mismo ID ya estaba sorteado y no mueve los demás dilemas. Las situaciones nuevas participan únicamente en carreras nuevas. Si eliminás un ID, el servidor usa el siguiente suplente válido del casillero afectado.
 
 El servidor guarda una copia del catálogo para validar que nadie pueda inventar una alternativa desde el navegador. Después de cambiar `career-events.js`, sincronizá la copia con:
 

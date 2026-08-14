@@ -1,6 +1,6 @@
 # Gambito Criollo
 
-Juego narrativo de carrera ajedrecística con 10 temporadas, un dilema por temporada y 2 ejercicios tácticos fijos en cada una.
+Juego narrativo de carrera ajedrecística con 10 temporadas, un dilema por temporada y 2 ejercicios tácticos en cada una.
 
 ## Progresión
 
@@ -57,13 +57,15 @@ El botón para compartir prepara una captura PNG de la pantalla final. En dispos
 
 La progresión se valida en la función Edge `game-api`: el servidor asigna el dilema y los ejercicios, resuelve el azar, verifica cada jugada y calcula intentos, ELO, niveles y títulos. El navegador no puede enviar un puntaje final arbitrario.
 
+Al crear una carrera, el servidor presortea el contenido de las 55 combinaciones de temporada y nivel que el jugador podría alcanzar. El plan guarda IDs, no copias de los objetos: recargar conserva el mismo sorteo, agregar contenido al catálogo no reordena una carrera iniciada y editar un ejercicio o dilema actualiza solamente las apariciones de ese ID. Si un ID sorteado se elimina, el servidor repara únicamente el casillero afectado.
+
 Los datos se guardan en Supabase mediante las migraciones de `supabase/migrations`. Las tablas tienen RLS activado sin políticas públicas; el navegador solo accede a la función de juego usando un token aleatorio por instalación. No se solicitan correo ni datos personales.
 
 “Participantes” cuenta instalaciones de navegador únicas que comenzaron una carrera normal, por lo que es una aproximación a personas. Cada jugador aparece una sola vez en el ranking, con su mejor carrera. Las carreras `BOCA` quedan fuera de todas las estadísticas globales.
 
 ## Situaciones
 
-Las 20 situaciones de carrera están en `career-events.js`. Cada una declara temporadas y niveles permitidos y puede incluir un desarrollo largo más un enlace a una columna de Ciencia del Fin del Mundo en Spotify. La guía para agregar nuevas situaciones está en `SITUACIONES.md`.
+Las 20 situaciones de carrera están en `career-events.js`. Cada una declara temporadas y niveles permitidos y puede incluir un desarrollo largo más un enlace a una columna de Ciencia del Fin del Mundo en Spotify. El presorteo respeta esos cuatro límites y conserva un orden de suplentes para evitar repetir un dilema durante una carrera. La guía para agregar nuevas situaciones está en `SITUACIONES.md`.
 
 ## Banco de ejercicios
 

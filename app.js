@@ -9,7 +9,7 @@ import { seasonScreen } from './season-screens.js';
 
 const GAME_KEY = 'gambito-v6';
 const VISITOR_KEY = 'gambito-visitor-v1';
-const CLIENT_VERSION = '1.4.0';
+const CLIENT_VERSION = '1.5.0';
 const SHARE_TEXT = 'Jugué el Gambito Criollo de Ciencia del Fin del Mundo y así me fue';
 const GAME_URL = 'https://matiasg11.github.io/gambitocriollo/';
 const pieceName = { k:'rey', q:'dama', r:'torre', b:'alfil', n:'caballo', p:'peón' };
@@ -154,12 +154,9 @@ async function enterGame(){
   await route();
 }
 
-function getSeasonExercises(){
+function findExerciseById(id){
   const source = isDebug() ? debugExercises : exercises;
-  const exerciseLevel = state.level;
-  const pool = source.filter(item => item.level === exerciseLevel);
-  const offset = ((state.season - 1) * 2) % pool.length;
-  return [pool[offset], pool[(offset + 1) % pool.length]];
+  return source.find(item => (item.id || item.source.split('/').pop()) === id);
 }
 
 async function route(){
@@ -177,8 +174,7 @@ async function route(){
   try {
     const result = await serverAction('exercise');
     applyServerState(result.state);
-    const plan = getSeasonExercises();
-    const planned = plan.find(item => (item.id || item.source.split('/').pop()) === result.exerciseId);
+    const planned = findExerciseById(result.exerciseId);
     if(!planned) throw new Error('El servidor indicó un ejercicio que no existe en esta versión del juego.');
     loadPuzzle(planned);
   } catch(error){ showServerError(error); }
