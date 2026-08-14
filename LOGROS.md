@@ -26,6 +26,10 @@ Los logros se definen en `achievements.js`. Están separados de los dilemas para
 | Pedir controles adicionales | Custodio de la Pureza del Juego |
 | Rehacer la preparación filtrada | Alquimista de la Novedad sobre la Novedad |
 | Jugar el match frente al público | Gladiador de la Plaza Ajedrecística |
+| Rechazar la oferta de trampa | La Mano Limpia |
+| Jugar a ganar en La última planilla | Hasta la Última Casilla |
+| Volver al club para enseñar | El Tablero se Multiplica |
+| Proteger los secretos del equipo | Guardián de los Cuadernos |
 
 Estos logros se conceden al tomar la decisión indicada, independientemente de que el azar posterior produzca un resultado positivo o negativo.
 

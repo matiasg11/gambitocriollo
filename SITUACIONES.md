@@ -47,7 +47,7 @@ Si no querés texto largo o audio en un dilema, podés omitir esos campos por co
 
 ## Disponibilidad
 
-El catálogo actual contiene 22 situaciones. Cada objeto declara explícitamente:
+El catálogo actual contiene 24 situaciones. Cada objeto declara explícitamente:
 
 - `minSeason` y `maxSeason`: temporadas permitidas, de 1 a 10.
 - `minLevel` y `maxLevel`: niveles permitidos, de 1 a 10.
@@ -58,30 +58,32 @@ Para agregar una situación, copiá uno de los objetos de `career-events.js`, as
 
 | ID | Situación | Temporadas | Niveles |
 |---|---|---:|---:|
-| `birthday-debut` | El cumpleaños y el debut | 1 | 1–10 |
-| `first-open-road` | La ruta al primer abierto | 2 | 1–10 |
-| `exposed-repertoire` | Tu repertorio quedó expuesto | 3 | 1–10 |
-| `master-draw-offer` | La oferta del maestro | 4 | 1–10 |
-| `presidential-first-move` | La primera jugada | 5 | 1–10 |
-| `sponsor-contract` | El contrato del patrocinador | 6 | 1–10 |
-| `shared-preparation` | Preparación compartida | 7 | 1–10 |
-| `fever-before-qualifier` | Fiebre antes de la selección | 8 | 1–10 |
-| `open-microphone` | El micrófono abierto | 9 | 1–10 |
-| `last-draw-offer` | La última oferta de tablas | 10 | 1–10 |
-| `blindfold-simultaneous` | La exhibición a ciegas | 1–3 | 1–3 |
-| `dubious-gambit` | El gambito dudoso | 2–5 | 1–5 |
-| `trainer-change` | Cambiar de entrenador | 3–6 | 2–6 |
-| `team-board-order` | El primer tablero | 3–7 | 2–7 |
-| `time-control-choice` | Dos torneos, un fin de semana | 4–8 | 3–8 |
-| `seconds-advice` | El consejo del segundo | 5–9 | 4–9 |
-| `streamer-invitation` | La invitación del streamer | 1–10 | 1–10 |
-| `engine-accusation` | Sospecha de asistencia | 6–10 | 5–10 |
-| `preparation-leak` | La filtración | 7–10 | 6–10 |
-| `match-conditions` | Las condiciones del match | 8–10 | 8–10 |
-| `cheating-offer` | La oferta imposible | 4–9 | 3–6 |
-| `final-legacy` | La última planilla | 10 | 1–10 |
+| `birthday-debut` | El cumpleaños y el debut | 1–2 | 1–2 |
+| `first-open-road` | La ruta al primer abierto | 1–3 | 1–10 |
+| `exposed-repertoire` | Tu repertorio quedó expuesto | 2–7 | 1–10 |
+| `master-draw-offer` | La oferta del maestro | 3–10 | 3–10 |
+| `presidential-first-move` | La primera jugada | 4–10 | 1–10 |
+| `sponsor-contract` | El contrato del patrocinador | 5–9 | 1–10 |
+| `shared-preparation` | Preparación compartida | 3–9 | 1–10 |
+| `fever-before-qualifier` | Fiebre antes de la selección | 3–9 | 1–10 |
+| `open-microphone` | El micrófono abierto | 7–10 | 1–10 |
+| `last-draw-offer` | La última oferta de tablas | 4–9 | 1–10 |
+| `blindfold-simultaneous` | La exhibición a ciegas | 3–9 | 3–10 |
+| `dubious-gambit` | El gambito dudoso | 2–10 | 1–10 |
+| `trainer-change` | Cambiar de entrenador | 2–9 | 1–9 |
+| `team-board-order` | El primer tablero | 2–8 | 1–8 |
+| `time-control-choice` | Dos torneos, un fin de semana | 1–10 | 1–7 |
+| `seconds-advice` | El consejo del segundo | 4–9 | 3–9 |
+| `streamer-invitation` | La invitación del streamer | 3–10 | 1–10 |
+| `engine-accusation` | Sospecha de asistencia | 5–10 | 4–10 |
+| `preparation-leak` | La filtración | 4–10 | 4–10 |
+| `cheating-offer` | La oferta imposible | 3–9 | 2–7 |
+| `match-conditions` | Las condiciones del match | 6–9 | 5–10 |
+| `final-legacy` | La última planilla | Final | 1–10 |
+| `final-teach-or-play` | La mesa que queda libre | Final | 1–10 |
+| `final-book-offer` | Las páginas de la carrera | Final | 1–10 |
 
-`finalOnly: true` reserva un dilema para la temporada 10 y lo excluye del sorteo normal. `maxLevelOnChoose: 6` marca la elección como un bloqueo permanente de ascenso; actualmente se usa para la alternativa de aceptar la trampa.
+`finalOnly: true` incorpora el dilema al sorteo especial que ocurre después de completar los dos ejercicios de la temporada 10 y lo excluye del sorteo normal. `maxLevelOnChoose: 6` marca la elección como un bloqueo permanente de ascenso; actualmente se usa para la alternativa de aceptar la trampa.
 
 ## Después de editar
 

@@ -10,7 +10,6 @@ import { seasonScreen } from './season-screens.js';
 const GAME_KEY = 'gambito-v6';
 const VISITOR_KEY = 'gambito-visitor-v1';
 const CLIENT_VERSION = '1.5.0';
-const SHARE_TEXT = 'Jugué el Gambito Criollo de Ciencia del Fin del Mundo y así me fue';
 const GAME_URL = 'https://matiasg11.github.io/gambitocriollo/';
 const pieceName = { k:'rey', q:'dama', r:'torre', b:'alfil', n:'caballo', p:'peón' };
 const $ = id => document.getElementById(id);
@@ -73,9 +72,12 @@ function applyServerState(serverState){
 }
 
 function isDebug(){ return state.name.trim().toUpperCase() === 'BOCA'; }
-function adjustedElo(ex){ return Math.round(ex.rating * 1.5); }
 function currentElo(){ return scoreElo(state.level,state.decisionElo,state.exerciseElo); }
 function displayName(){ return `${state.chessTitle ? state.chessTitle + ' ' : ''}${state.name}`; }
+function shareSummaryText(){
+  const title = state.chessTitle ? `Título ${state.chessTitle}` : `Nivel ${state.level}`;
+  return `${displayName()} terminó Gambito Criollo · ${title} · ${state.wins}/${state.exerciseTotal} ejercicios · ${state.decisionPositive}/${state.decisionTotal} decisiones favorables · ${currentElo()} ELO`;
+}
 function stageName(){ return levelStageName(state.season,state.level) ?? seasonScreen(state.season).title; }
 function safeSpotifyUrl(value){
   try {
@@ -178,7 +180,7 @@ function findExerciseById(id){
 }
 
 async function route(){
-  if(state.season > 10) return ending();
+  if(state.season > 10) return state.completed ? ending() : showEvent(true);
   if(!state.introsSeen.includes(state.season)){
     screens('intro');
     const screen = seasonScreen(state.season);
@@ -232,8 +234,7 @@ function loadPuzzle(ex){
   selected = null;
   last = [];
   screens('puzzle');
-  const debugText = isDebug() ? ' · DEBUG 600–800' : '';
-  $('puzzleLevel').textContent = `Temporada ${state.season} · ELO ${adjustedElo(ex)} · base ${ex.rating}${debugText}`;
+  $('puzzleLevel').textContent = `Temporada ${state.season} · Ejercicio ${state.seasonAnswers.length + 1} de 2`;
   $('puzzleTitle').textContent = ex.title;
   $('objective').textContent = ex.objective;
   $('source').href = ex.source;
@@ -383,10 +384,17 @@ function finishExercise(result){
   $('resultTag').textContent = `Temporada ${completedSeason} completada · ${correct}/2 correctos`;
   $('resultTitle').textContent = movement === 'up' ? `Subís al nivel ${state.level}` : movement === 'down' ? `Bajás al nivel ${state.level}` : `Te mantenés en el nivel ${state.level}`;
   $('resultText').textContent = correct === 2 && previousLevel < MAX_LEVEL ? 'Resolviste los dos ejercicios y avanzás un escalón.' : correct === 2 ? 'Resolviste los dos ejercicios y revalidás tu lugar en la cima.' : correct === 1 ? 'Un acierto y un fallo: conservás tu nivel para la próxima temporada.' : previousLevel === MIN_LEVEL ? `Fallaste ambos ejercicios, pero el nivel ${MIN_LEVEL} es el piso de la carrera.` : 'Los dos ejercicios quedaron sin resolver y retrocedés un nivel.';
+  if(completedSeason === 10){
+    $('resultTitle').textContent = 'Completaste la última temporada';
+    $('resultText').textContent += ' Solo queda una decisión para cerrar tu carrera.';
+    $('next').textContent = 'Ir al dilema final →';
+  } else {
+    $('next').textContent = 'Continuar →';
+  }
   $('next').onclick = () => route();
 }
 
-async function showEvent(){
+async function showEvent(finalEvent = false){
   screens('event');
   const box = $('eventChoices');
   box.innerHTML = '<p>El servidor está preparando la situación…</p>';
@@ -395,10 +403,10 @@ async function showEvent(){
   $('eventSpotify').hidden = true;
   $('eventSpotify').removeAttribute('href');
   try {
-    const result = await (prefetchEvent() || serverAction('event'));
+    const result = await (finalEvent ? serverAction('final-event') : (prefetchEvent() || serverAction('event')));
     applyServerState(result.state);
     const event = result.event;
-    $('eventTag').textContent = `Temporada ${state.season} · Situación de carrera`;
+    $('eventTag').textContent = finalEvent ? 'Dilema final · La última decisión' : `Temporada ${state.season} · Situación de carrera`;
     $('eventTitle').textContent = event.title;
     $('eventText').textContent = event.text;
     const longText = String(event.longText || '').trim();
@@ -509,11 +517,11 @@ function renderFinalAchievements(){
   const awards = normalizeAchievements(state.achievements);
   const list = $('finalAchievements');
   list.innerHTML = '';
-  $('achievementCount').textContent = `${awards.length} ${awards.length === 1 ? 'distinción' : 'distinciones'}`;
+  $('achievementCount').textContent = `${awards.length} ${awards.length === 1 ? 'logro' : 'logros'}`;
   if(!awards.length){
     const empty = document.createElement('p');
     empty.className = 'achievement-empty';
-    empty.textContent = 'Tu próximo recorrido puede abrir este palmarés.';
+    empty.textContent = 'Tu próximo recorrido puede desbloquear nuevos logros.';
     list.appendChild(empty);
     return;
   }
@@ -543,7 +551,7 @@ async function prepareEndingScreenshot(){
     if(document.fonts?.ready) await document.fonts.ready;
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     const background = getComputedStyle(document.body).backgroundColor || '#f3ead7';
-    const canvas = await html2canvas($('ending'), {
+    const canvas = await html2canvas($('shareCard'), {
       backgroundColor: background,
       scale: Math.min(2,window.devicePixelRatio || 1),
       useCORS: true,
@@ -562,7 +570,7 @@ async function prepareEndingScreenshot(){
     return null;
   }).finally(() => {
     button.disabled = false;
-    button.textContent = 'Compartir resultados';
+    button.textContent = 'Compartir mi carrera';
   });
   return endingScreenshotPromise;
 }
@@ -588,14 +596,15 @@ async function shareResults(){
       prepareEndingScreenshot();
       return;
     }
-    const shareData = {title:'Gambito Criollo',text:SHARE_TEXT,url:GAME_URL,files:[file]};
+    const shareText = shareSummaryText();
+    const shareData = {title:'Mi carrera en Gambito Criollo',text:shareText,url:GAME_URL,files:[file]};
     if(navigator.share && navigator.canShare?.({files:[file]})){
       await navigator.share(shareData);
       $('shareFeedback').textContent = 'Captura, texto y enlace compartidos.';
       return;
     }
     downloadScreenshot(file);
-    await navigator.clipboard.writeText(`${SHARE_TEXT}\n${GAME_URL}`);
+    await navigator.clipboard.writeText(`${shareText}\n${GAME_URL}`);
     $('shareFeedback').textContent = 'Descargamos la captura y copiamos el texto con el enlace. Adjuntá la imagen en tu red social.';
   } catch(error){
     if(error?.name !== 'AbortError') $('shareFeedback').textContent = 'No se pudo compartir. Probá nuevamente o guardá la captura desde otro navegador.';
@@ -606,8 +615,16 @@ async function ending(){
   screens('ending');
   endingScreenshotFile = null;
   endingScreenshotPromise = null;
+  const titleNames = {FM:'Maestro FIDE',IM:'Maestro Internacional',GM:'Gran Maestro'};
   $('endingTitle').textContent = state.level >= 10 ? 'La corona queda en casa' : state.level >= 8 ? 'Entre los mejores del mundo' : 'Una carrera con carácter';
-  $('endingText').textContent = `${displayName()} cierra diez temporadas en el nivel ${state.level}, con ${state.wins} de ${state.exerciseTotal} ejercicios resueltos, ${currentElo()} de ELO final y un máximo de ${state.maxElo}.`;
+  $('finalPlayerName').textContent = displayName();
+  $('finalChessTitle').textContent = state.chessTitle || '—';
+  $('finalTitleName').textContent = titleNames[state.chessTitle] || 'Sin título oficial';
+  $('finalExerciseScore').textContent = `${state.wins}/${state.exerciseTotal}`;
+  $('finalDecisionScore').textContent = `${state.decisionPositive}/${state.decisionTotal}`;
+  $('finalElo').textContent = currentElo();
+  $('finalLevel').textContent = `Nivel ${state.level} · Máximo ${state.maxElo}`;
+  $('endingText').textContent = 'Diez temporadas, veinte ejercicios y cada decisión tomada dentro y fuera del tablero.';
   $('shareFeedback').textContent = '';
   stats();
   renderFinalAchievements();

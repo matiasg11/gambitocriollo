@@ -31,6 +31,8 @@ export const DECISION_ACHIEVEMENTS = Object.freeze({
   'match-conditions:public-stage': award('decision-public-stage', 'Gladiador de la Plaza Ajedrecística', 'Elegiste disputar el match frente a la multitud.'),
   'cheating-offer:reject-cheating': award('decision-reject-cheating', 'La Mano Limpia', 'Rechazaste una oferta de asistencia ilegal y entregaste las pruebas.'),
   'final-legacy:risk-it-all': award('decision-final-risk', 'Hasta la Última Casilla', 'Elegiste jugar por la victoria en el dilema final de la carrera.'),
+  'final-teach-or-play:teach': award('decision-final-teach', 'El Tablero se Multiplica', 'Cerraste tu carrera abriendo el camino para una nueva generación.'),
+  'final-book-offer:protect-team': award('decision-final-loyalty', 'Guardián de los Cuadernos', 'Protegiste los secretos del equipo en la última decisión de la carrera.'),
 });
 
 export const MILESTONE_ACHIEVEMENTS = Object.freeze({
