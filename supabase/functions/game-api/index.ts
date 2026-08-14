@@ -6,11 +6,14 @@ import { careerEvents } from './career-events.js';
 import { decisionAchievement, milestoneAchievement } from './achievements.js';
 import { MAX_LEVEL, MIN_LEVEL, START_LEVEL, baseElo, maxElo, scoreElo } from './game-config.js';
 
-const CLIENT_VERSION = '1.6.0';
+const CLIENT_VERSION = '1.7.0';
+const LIVE_CLIENT_VERSION = '1.6.0';
 const PRIOR_CLIENT_VERSION = '1.5.0';
 const PREVIOUS_CLIENT_VERSION = '1.4.0';
 const LEGACY_CLIENT_VERSION = '1.2.0';
-const SUPPORTED_CLIENT_VERSIONS = new Set([CLIENT_VERSION]);
+const SUPPORTED_CLIENT_VERSIONS = new Set([CLIENT_VERSION, LIVE_CLIENT_VERSION]);
+const CONTENT_DRAW_CLIENT_VERSIONS = new Set([CLIENT_VERSION, LIVE_CLIENT_VERSION]);
+const COUNTRY_CODES = new Set(['AF','AL','DE','AD','AO','AG','SA','DZ','AR','AM','AU','AT','AZ','BS','BD','BB','BH','BE','BZ','BJ','BY','MM','BO','BA','BW','BR','BN','BG','BF','BI','BT','CV','KH','CM','CA','QA','TD','CL','CN','CY','CO','KM','CG','CD','KP','KR','CI','CR','HR','CU','DK','DM','EC','EG','SV','AE','ER','SK','SI','ES','US','EE','SZ','ET','PH','FI','FJ','FR','GA','GM','GE','GH','GD','GR','GT','GN','GQ','GW','GY','HT','HN','HU','IN','ID','IQ','IR','IE','IS','MH','SB','IL','IT','JM','JP','JO','KZ','KE','KG','KI','KW','LA','LS','LV','LB','LR','LY','LI','LT','LU','MK','MG','MY','MW','MV','ML','MT','MA','MU','MR','MX','FM','MD','MC','MN','ME','MZ','NA','NR','NP','NI','NE','NG','NO','NZ','OM','NL','PK','PW','PA','PG','PY','PE','PL','PT','GB','CF','CZ','DO','RW','RO','RU','WS','KN','SM','VC','LC','ST','SN','RS','SC','SL','SG','SY','SO','LK','ZA','SD','SS','SE','CH','SR','TH','TZ','TJ','TL','TG','TO','TT','TN','TM','TR','TV','UA','UG','UY','UZ','VU','VA','VE','VN','YE','DJ','ZM','ZW','PS']);
 const CONTENT_DRAW_VERSION = 1;
 const LEGACY_ELO_BASE = [600,800,1200,1400,1600,2000,2200,2350,2500,2600,2750];
 const TITLE_RULES = [
@@ -123,6 +126,7 @@ function publicSession(session: Session) {
   return {
     id: session.id,
     name: session.player_name,
+    countryCode: session.country_code || '',
     debug: session.debug,
     season: session.season,
     level: session.level,
@@ -283,7 +287,7 @@ function slotEventsAreValid(session: Session, slot: DrawSlot | null) {
 }
 
 async function ensureContentDraw(admin: any, session: Session) {
-  if (session.client_version !== CLIENT_VERSION || session.season > 10) return session;
+  if (!CONTENT_DRAW_CLIENT_VERSIONS.has(session.client_version) || session.season > 10) return session;
 
   let draw = sessionContentDraw(session);
   if (!draw) {
@@ -321,7 +325,7 @@ async function ensureContentDraw(admin: any, session: Session) {
 
 function chooseEvent(session: Session) {
   const allEligible = eligibleEvents(session);
-  const plannedIds = session.client_version === CLIENT_VERSION ? drawSlot(session)?.eventIds : null;
+  const plannedIds = CONTENT_DRAW_CLIENT_VERSIONS.has(session.client_version) ? drawSlot(session)?.eventIds : null;
   const planned = plannedIds?.map((id) => allEligible.find((event: any) => event.id === id)).filter(Boolean) || [];
   const candidates = planned.length ? planned : allEligible;
   const unused = candidates.filter((event: any) => !session.event_history.includes(event.id));
@@ -359,7 +363,7 @@ function publicEvent(event: any) {
 function seasonExercises(session: Session) {
   const pool = exercisePool(session);
   if (!pool.length) throw new ApiError(422, `No hay ejercicios para el nivel ${session.level}.`);
-  if (session.client_version === CLIENT_VERSION) {
+  if (CONTENT_DRAW_CLIENT_VERSIONS.has(session.client_version)) {
     const ids = drawSlot(session)?.exerciseIds || [];
     const planned = ids.map((id) => pool.find((item: any) => exerciseId(item) === id)).filter(Boolean);
     if (planned.length !== 2) throw new ApiError(422, 'El presorteo de ejercicios necesita reparación.');
@@ -509,11 +513,14 @@ Deno.serve(async (request) => {
     if (action === 'start') {
       const name = String(payload.name || '').replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 18);
       if (!name) throw new ApiError(400, 'Ingresá un nombre para comenzar.');
+      const countryCode = String(payload.countryCode || '').toUpperCase();
+      if (!COUNTRY_CODES.has(countryCode)) throw new ApiError(400, 'Elegí un país válido para comenzar.');
       const debug = name.toUpperCase() === 'BOCA';
       const sessionDraft = { debug, client_version: requestedClientVersion };
       const { data: session, error } = await admin.from('gambito_sessions').insert({
         visitor_id: visitorId,
         player_name: name,
+        country_code: countryCode,
         debug,
         level: START_LEVEL,
         max_level: START_LEVEL,
@@ -524,7 +531,7 @@ Deno.serve(async (request) => {
           ? LEGACY_ELO_BASE[START_LEVEL]
           : baseElo(START_LEVEL),
         client_version: requestedClientVersion,
-        content_draw: requestedClientVersion === CLIENT_VERSION ? buildContentDraw(sessionDraft) : {},
+        content_draw: CONTENT_DRAW_CLIENT_VERSIONS.has(requestedClientVersion) ? buildContentDraw(sessionDraft) : {},
       }).select('*').single();
       if (error) throw error;
       if (!debug) {
