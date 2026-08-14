@@ -1,22 +1,23 @@
 import { Chess } from 'https://cdn.jsdelivr.net/npm/chess.js@1.4.0/+esm';
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import html2canvas from 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm';
-import { exercises } from './exercises.js?v=1.6.0';
+import { exercises } from './exercises.js?v=1.7.0';
 import { debugExercises } from './debug-exercises.js';
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from './backend-config.js';
-import { MAX_LEVEL, MIN_LEVEL, START_LEVEL, baseElo, maxElo, scoreElo, levelStageName } from './game-config.js?v=1.6.0';
+import { MAX_LEVEL, MIN_LEVEL, START_LEVEL, baseElo, maxElo, scoreElo, levelStageName } from './game-config.js?v=1.7.0';
 import { seasonScreen } from './season-screens.js';
+import { COUNTRIES, countryLabel } from './countries.js';
 
 const GAME_KEY = 'gambito-v6';
 const VISITOR_KEY = 'gambito-visitor-v1';
-const CLIENT_VERSION = '1.6.0';
+const CLIENT_VERSION = '1.7.0';
 const GAME_URL = 'https://matiasg11.github.io/gambitocriollo/';
 const pieceName = { k:'rey', q:'dama', r:'torre', b:'alfil', n:'caballo', p:'peón' };
 const $ = id => document.getElementById(id);
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 let state = {
-  name:'', season:1, level:START_LEVEL, wins:0, decisionElo:0, exerciseElo:0, chessTitle:'',
+  name:'', countryCode:'', season:1, level:START_LEVEL, wins:0, decisionElo:0, exerciseElo:0, chessTitle:'',
   achievements:[], pendingAchievements:[], pendingAchievement:null,
   eventsDone:[], introsSeen:[], seasonAnswers:[], eventHistory:[], currentEventId:null,
   decisionPositive:0, decisionTotal:0, exerciseTotal:0, maxElo:baseElo(START_LEVEL), maxLevel:START_LEVEL,
@@ -452,16 +453,12 @@ async function resolveEvent(choice,box){
 
 function feedback(text, kind){ $('feedback').textContent = text; $('feedback').className = `feedback ${kind}`; }
 
-function renderLeaderboard(globalStats){
-  const body = $('leaderboardBody');
+function appendRankingRows(body,entries,current){
   body.innerHTML = '';
-  const current = globalStats?.currentPlayer;
-  const entries = [...(globalStats?.leaderboard || [])];
-  if(current && !entries.some(entry => entry.position === current.position)) entries.push(current);
   entries.forEach(entry => {
     const row = document.createElement('tr');
     if(current && entry.position === current.position) row.className = 'current-player';
-    [entry.position,entry.name,entry.elo,entry.level,`${entry.decisionPositive}/${entry.decisionTotal}`,`${entry.exercisePositive}/${entry.exerciseTotal}`].forEach(value => {
+    [entry.position,entry.name,countryLabel(entry.countryCode),entry.elo,entry.level,`${entry.decisionPositive}/${entry.decisionTotal}`,`${entry.exercisePositive}/${entry.exerciseTotal}`].forEach(value => {
       const cell = document.createElement('td');
       cell.textContent = value;
       row.appendChild(cell);
@@ -471,9 +468,16 @@ function renderLeaderboard(globalStats){
   if(!entries.length){
     const row = document.createElement('tr');
     const cell = document.createElement('td');
-    cell.colSpan = 6; cell.textContent = 'Todavía no hay carreras clasificadas.';
+    cell.colSpan = 7; cell.textContent = 'Todavía no hay carreras clasificadas.';
     row.appendChild(cell); body.appendChild(row);
   }
+}
+
+function renderLeaderboard(globalStats){
+  const current = globalStats?.currentPlayer;
+  appendRankingRows($('leaderboardBody'),globalStats?.leaderboard || [],current);
+  appendRankingRows($('nearbyLeaderboardBody'),globalStats?.nearby || [],current);
+  $('nearbyLeaderboard').hidden = !current || !(globalStats?.nearby?.length);
 }
 
 function renderHistogram(globalStats){
@@ -664,12 +668,13 @@ function playAgain(){ localStorage.removeItem(GAME_KEY); location.reload(); }
 $('start').onsubmit = async event => {
   event.preventDefault();
   const name = $('name').value.trim();
+  const countryCode = $('country').value;
   const button = $('start').querySelector('button');
   button.disabled = true; button.textContent = 'Conectando…';
   $('startFeedback').textContent = '';
   try {
-    const result = await serverAction('start',{name});
-    state = {...state,name,serverSessionId:result.state.id};
+    const result = await serverAction('start',{name,countryCode});
+    state = {...state,name,countryCode,serverSessionId:result.state.id};
     applyServerState(result.state);
     await enterGame();
   } catch(error){
@@ -677,6 +682,12 @@ $('start').onsubmit = async event => {
     button.disabled = false; button.textContent = 'Empezar →';
   }
 };
+COUNTRIES.forEach(country => {
+  const option = document.createElement('option');
+  option.value = country.code;
+  option.textContent = `${country.flag} ${country.name}`;
+  $('country').appendChild(option);
+});
 $('reset').onclick = reset;
 $('again').onclick = playAgain;
 $('share').onclick = shareResults;

@@ -181,14 +181,14 @@ select visitor_id, completed_at - interval '10 days', completed_at, 1, 1
 from gambito_simulated_careers;
 
 insert into public.gambito_sessions(
-  id, visitor_id, player_name, debug, season, level, wins,
+  id, visitor_id, player_name, country_code, debug, season, level, wins,
   decision_elo, exercise_elo, chess_title,
   decision_positive, decision_total, exercise_total,
   max_elo, max_level, events_done, exercise_attempts, exercise_step,
   version, client_version, current_elo, created_at, updated_at, completed_at
 )
 select
-  session_id, visitor_id, player_name, false, 11, final_level, exercise_positive,
+  session_id, visitor_id, player_name, 'AR', false, 11, final_level, exercise_positive,
   decision_elo, exercise_elo, chess_title,
   decision_positive, 10, 20,
   max_elo, max_level, array[1,2,3,4,5,6,7,8,9,10]::smallint[], 3, 0,
@@ -197,14 +197,14 @@ select
 from gambito_simulated_careers;
 
 insert into public.gambito_results(
-  session_id, visitor_id, player_name, final_elo, max_elo,
+  session_id, visitor_id, player_name, country_code, final_elo, max_elo,
   final_level, max_level, chess_title,
   decision_positive, decision_total,
   exercise_positive, exercise_total, client_version, completed_at
 )
 select
   session_id, visitor_id,
-  concat(case when chess_title = '' then '' else chess_title || ' ' end, player_name),
+  concat(case when chess_title = '' then '' else chess_title || ' ' end, player_name), 'AR',
   final_elo, max_elo, final_level, max_level, chess_title,
   decision_positive, 10, exercise_positive, 20,
   'simulation-ranking-v1', completed_at
