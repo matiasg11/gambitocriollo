@@ -14,6 +14,8 @@ import { fileURLToPath } from 'node:url';
 
 const SOURCE_URL = 'https://database.lichess.org/lichess_db_puzzle.csv.zst';
 const PER_LEVEL = 100;
+const MAX_PLAYER_MOVES = 3;
+const PINNED_PUZZLE_IDS = new Set(['00Zit']);
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const localArchive = resolve(projectRoot, 'data', 'lichess_db_puzzle.csv.zst');
 
@@ -56,14 +58,24 @@ function parseCsv(text) {
   return rows;
 }
 
+function rangeForRating(rating) {
+  return Object.entries(EXERCISE_RATING_RANGES).find(([, range]) =>
+    rating >= range.min && rating <= range.max
+  );
+}
+
 const legacyCsv = await readFile(resolve(projectRoot, 'data', 'ejercicios_ajedrez_30.csv'), 'utf8');
 const legacyExercises = parseCsv(legacyCsv).slice(1).map(columns => {
-  const [level, range, rating, title, objective, fen, solution, , explanation, hint, source] = columns;
+  const [, , ratingText, title, objective, fen, solution, , explanation, hint, source] = columns;
+  const rating = Number(ratingText);
+  const target = rangeForRating(rating);
+  if (!target) return null;
+  const [levelText, range] = target;
   return {
     id: source.split('/').pop(),
-    level: Number(level),
-    range,
-    rating: Number(rating),
+    level: Number(levelText),
+    range: `${range.min}–${range.max}`,
+    rating,
     title,
     objective,
     fen,
@@ -73,13 +85,10 @@ const legacyExercises = parseCsv(legacyCsv).slice(1).map(columns => {
     source,
     legacy: true,
   };
+}).filter(Boolean).filter(exercise => {
+  const tokenCount = exercise.solution.replaceAll('/', ' ').trim().split(/\s+/).filter(Boolean).length;
+  return Math.ceil(tokenCount / 2) <= MAX_PLAYER_MOVES;
 });
-
-function rangeForRating(rating) {
-  return Object.entries(EXERCISE_RATING_RANGES).find(([, range]) =>
-    rating >= range.min && rating <= range.max
-  );
-}
 
 const themeLabels = [
   ['mateIn1', ['Mate en 1', 'Da jaque mate en una jugada.', 'Revisá todos los jaques disponibles.']],
@@ -115,9 +124,14 @@ compressed.close();
 compressed = createReadStream(localArchive, { start: 12 });
 const decompressed = compressed.pipe(createZstdDecompress());
 const lines = createInterface({ input: decompressed, crlfDelay: Infinity });
+let selectionComplete = false;
+decompressed.on('error', error => {
+  if (!selectionComplete) console.error(`Error al descomprimir la base de Lichess: ${error.message}`);
+});
 
 let inspected = 0;
 const selectedIds = new Set();
+const pinnedExercises = new Map();
 for await (const line of lines) {
   if (!line || line.startsWith('PuzzleId,')) continue;
   inspected++;
@@ -133,16 +147,21 @@ for await (const line of lines) {
   const target = rangeForRating(rating);
   if (!target) continue;
 
+  const moveTokens = moves.trim().split(/\s+/).filter(Boolean);
+  const playerMoveCount = Math.ceil((moveTokens.length - 1) / 2);
+  if (playerMoveCount < 1 || playerMoveCount > MAX_PLAYER_MOVES) continue;
+
   const [levelText, range] = target;
   const level = Number(levelText);
-  if (buckets[level].length >= PER_LEVEL) continue;
+  const pinned = PINNED_PUZZLE_IDS.has(id);
+  if (buckets[level].length >= PER_LEVEL && !pinned) continue;
   if (deviation > 100 || popularity < 80 || plays < 50) continue;
 
   const themes = themesText.split(/\s+/).filter(Boolean);
   const turnBeforeOpponentMove = fen.split(' ')[1];
   const solverSide = turnBeforeOpponentMove === 'w' ? 'negras' : 'blancas';
   const copy = presentation(themes, solverSide);
-  buckets[level].push({
+  const exercise = {
     id,
     level,
     range: `${range.min}–${range.max}`,
@@ -155,21 +174,38 @@ for await (const line of lines) {
     explanation: `Ejercicio oficial de Lichess (${rating}): la secuencia validada convierte la táctica en una ventaja concreta.`,
     hint: copy.hint,
     source: `https://lichess.org/training/${id}`,
-  });
+  };
+  if (pinned) pinnedExercises.set(id, exercise);
+  if (buckets[level].length < PER_LEVEL) buckets[level].push(exercise);
   selectedIds.add(id);
 
-  if (Object.values(buckets).every(bucket => bucket.length === PER_LEVEL)) break;
+  if (
+    Object.values(buckets).every(bucket => bucket.length === PER_LEVEL) &&
+    [...PINNED_PUZZLE_IDS].every(puzzleId => pinnedExercises.has(puzzleId))
+  ) {
+    selectionComplete = true;
+    lines.close();
+    decompressed.destroy();
+    compressed.destroy();
+    break;
+  }
 }
 
 const incomplete = Object.entries(buckets).filter(([, bucket]) => bucket.length !== PER_LEVEL);
 if (incomplete.length) {
   throw new Error(`No se completaron los niveles: ${incomplete.map(([level, rows]) => `${level} (${rows.length})`).join(', ')}`);
 }
+const missingPinned = [...PINNED_PUZZLE_IDS].filter(id => !pinnedExercises.has(id));
+if (missingPinned.length) {
+  throw new Error(`No se encontraron los ejercicios fijados: ${missingPinned.join(', ')}`);
+}
 
 const allLegacyIds = new Set(legacyExercises.map(exercise => exercise.id));
 const exercises = Object.entries(buckets).flatMap(([level, rows]) => {
   const legacy = legacyExercises.filter(exercise => exercise.level === Number(level));
-  return [...legacy, ...rows.filter(exercise => !allLegacyIds.has(exercise.id))].slice(0, PER_LEVEL);
+  const pinned = [...pinnedExercises.values()].filter(exercise => exercise.level === Number(level));
+  const reservedIds = new Set([...allLegacyIds, ...pinned.map(exercise => exercise.id)]);
+  return [...legacy, ...pinned, ...rows.filter(exercise => !reservedIds.has(exercise.id))].slice(0, PER_LEVEL);
 });
 const metadata = {
   source: SOURCE_URL,
@@ -177,6 +213,8 @@ const metadata = {
   importedAt: new Date().toISOString(),
   inspectedRows: inspected,
   perLevel: PER_LEVEL,
+  maxPlayerMoves: MAX_PLAYER_MOVES,
+  pinnedPuzzleIds: [...PINNED_PUZZLE_IDS],
   ranges: EXERCISE_RATING_RANGES,
   exercises,
 };

@@ -1,15 +1,15 @@
 import { Chess } from 'https://cdn.jsdelivr.net/npm/chess.js@1.4.0/+esm';
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import html2canvas from 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm';
-import { exercises } from './exercises.js';
+import { exercises } from './exercises.js?v=1.6.0';
 import { debugExercises } from './debug-exercises.js';
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from './backend-config.js';
-import { MAX_LEVEL, MIN_LEVEL, START_LEVEL, baseElo, maxElo, scoreElo, levelStageName } from './game-config.js';
+import { MAX_LEVEL, MIN_LEVEL, START_LEVEL, baseElo, maxElo, scoreElo, levelStageName } from './game-config.js?v=1.6.0';
 import { seasonScreen } from './season-screens.js';
 
 const GAME_KEY = 'gambito-v6';
 const VISITOR_KEY = 'gambito-visitor-v1';
-const CLIENT_VERSION = '1.5.0';
+const CLIENT_VERSION = '1.6.0';
 const GAME_URL = 'https://matiasg11.github.io/gambitocriollo/';
 const pieceName = { k:'rey', q:'dama', r:'torre', b:'alfil', n:'caballo', p:'peón' };
 const $ = id => document.getElementById(id);

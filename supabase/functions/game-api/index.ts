@@ -6,16 +6,11 @@ import { careerEvents } from './career-events.js';
 import { decisionAchievement, milestoneAchievement } from './achievements.js';
 import { MAX_LEVEL, MIN_LEVEL, START_LEVEL, baseElo, maxElo, scoreElo } from './game-config.js';
 
-const CLIENT_VERSION = '1.5.0';
-const PRIOR_CLIENT_VERSION = '1.4.0';
-const PREVIOUS_CLIENT_VERSION = '1.3.0';
+const CLIENT_VERSION = '1.6.0';
+const PRIOR_CLIENT_VERSION = '1.5.0';
+const PREVIOUS_CLIENT_VERSION = '1.4.0';
 const LEGACY_CLIENT_VERSION = '1.2.0';
-const SUPPORTED_CLIENT_VERSIONS = new Set([
-  LEGACY_CLIENT_VERSION,
-  PREVIOUS_CLIENT_VERSION,
-  PRIOR_CLIENT_VERSION,
-  CLIENT_VERSION,
-]);
+const SUPPORTED_CLIENT_VERSIONS = new Set([CLIENT_VERSION]);
 const CONTENT_DRAW_VERSION = 1;
 const LEGACY_ELO_BASE = [600,800,1200,1400,1600,2000,2200,2350,2500,2600,2750];
 const TITLE_RULES = [
@@ -655,10 +650,19 @@ Deno.serve(async (request) => {
       for (let index = 0; index < session.exercise_step; index++) {
         playToken(prepared.game, prepared.sequence[index], prepared.mode);
       }
+      const submittedPosition = new Chess(prepared.game.fen());
+      let submittedResult: any = null;
+      try {
+        submittedResult = submittedPosition.move(uciMove(submittedMove));
+      } catch {
+        submittedResult = null;
+      }
       const expectedMove = playToken(prepared.game, prepared.sequence[session.exercise_step], prepared.mode);
       const expectedUci = moveUci(expectedMove);
+      const isExpectedMove = submittedMove === expectedUci;
+      const isAlternativeCheckmate = Boolean(submittedResult && submittedPosition.isCheckmate());
 
-      if (submittedMove !== expectedUci) {
+      if (!isExpectedMove && !isAlternativeCheckmate) {
         const attempts = session.exercise_attempts - 1;
         if (attempts > 0) {
           session = await casUpdate(admin, session, { exercise_attempts: attempts, exercise_step: 0 });
@@ -668,6 +672,20 @@ Deno.serve(async (request) => {
         return response(request, {
           ok: true, status: 'failed', attempts: 0,
           solution: solutionDisplay(exercise),
+          explanation: exercise.explanation,
+          ...completed,
+          updated: undefined,
+          state: publicSession(completed.updated),
+          stats: completed.updated.completed_at ? await publicStats(admin, visitorId) : undefined,
+        });
+      }
+
+      if (isAlternativeCheckmate && !isExpectedMove) {
+        const reward = session.exercise_attempts === 3 ? 8 : session.exercise_attempts === 2 ? 4 : 2;
+        const completed = await completeExercise(admin, session, true, reward);
+        return response(request, {
+          ok: true, status: 'solved', opponentMove: null, reward,
+          acceptedAlternative: true,
           explanation: exercise.explanation,
           ...completed,
           updated: undefined,

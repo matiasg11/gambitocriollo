@@ -44,15 +44,15 @@ export const MAX_ELO_BY_LEVEL = Object.freeze({
  */
 export const EXERCISE_RATING_RANGES = Object.freeze({
   1: Object.freeze({ min: 600, max: 799 }),
-  2: Object.freeze({ min: 800, max: 899 }),
-  3: Object.freeze({ min: 900, max: 999 }),
-  4: Object.freeze({ min: 1000, max: 1099 }),
-  5: Object.freeze({ min: 1100, max: 1199 }),
-  6: Object.freeze({ min: 1200, max: 1299 }),
-  7: Object.freeze({ min: 1300, max: 1399 }),
-  8: Object.freeze({ min: 1400, max: 1499 }),
-  9: Object.freeze({ min: 1500, max: 1599 }),
-  10: Object.freeze({ min: 1600, max: 1699 }),
+  2: Object.freeze({ min: 800, max: 999 }),
+  3: Object.freeze({ min: 1000, max: 1199 }),
+  4: Object.freeze({ min: 1200, max: 1399 }),
+  5: Object.freeze({ min: 1400, max: 1599 }),
+  6: Object.freeze({ min: 1600, max: 1749 }),
+  7: Object.freeze({ min: 1750, max: 1899 }),
+  8: Object.freeze({ min: 1900, max: 1999 }),
+  9: Object.freeze({ min: 2000, max: 2099 }),
+  10: Object.freeze({ min: 2100, max: 2200 }),
 });
 
 /**

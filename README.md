@@ -71,11 +71,13 @@ Después de resolver los dos ejercicios de la temporada 10, el servidor elige un
 
 ## Banco de ejercicios
 
-El banco normal contiene 1.000 puzzles de la [base abierta de Lichess](https://database.lichess.org/#puzzles), publicada con licencia CC0: 100 ejercicios para cada nivel.
+El banco normal contiene 1.000 puzzles de la [base abierta de Lichess](https://database.lichess.org/#puzzles), publicada con licencia CC0: 100 ejercicios únicos para cada nivel. Cada ejercicio exige como máximo tres jugadas del jugador. El presorteo usa IDs sin repetir, por lo que una carrera normal no vuelve a presentar el mismo ejercicio.
 
-Los rangos de rating original están en `EXERCISE_RATING_RANGES`, dentro de `game-config.js`. La selección importada y sus metadatos quedan en `data/lichess_exercises_1000.json`; el juego carga la versión compacta de `exercises.js`.
+Los rangos de rating original están en `EXERCISE_RATING_RANGES`, dentro de `game-config.js`: 600–799, 800–999, 1000–1199, 1200–1399, 1400–1599, 1600–1749, 1750–1899, 1900–1999, 2000–2099 y 2100–2200. La selección importada y sus metadatos quedan en `data/lichess_exercises_1000.json`; el juego carga la versión compacta de `exercises.js`.
 
-Para regenerar el banco, descargá `lichess_db_puzzle.csv.zst` dentro de `data` y ejecutá `scripts/import-lichess-puzzles.mjs` con Node. El importador exige popularidad mínima 80, al menos 50 partidas y desviación de rating máxima 100.
+Para regenerar el banco, descargá `lichess_db_puzzle.csv.zst` dentro de `data` y ejecutá `scripts/import-lichess-puzzles.mjs` con Node. El importador exige popularidad mínima 80, al menos 50 partidas y desviación de rating máxima 100. `PINNED_PUZZLE_IDS` conserva ejercicios puntuales que deban permanecer en el catálogo. Después podés auditar cantidad, unicidad, rangos y longitud con `scripts/validate-exercise-bank.mjs`.
+
+La validación acepta la línea principal de la base y también cualquier jugada legal alternativa que termine inmediatamente en jaque mate. Así, en `00Zit`, tanto `Qxg4#` como `Qh1#` resuelven correctamente el ejercicio.
 
 ## Datos simulados del ranking
 
