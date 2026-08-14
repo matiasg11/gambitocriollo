@@ -16,11 +16,11 @@ export const ELO_BY_LEVEL = Object.freeze({
   3: 1000,
   4: 1200,
   5: 1400,
-  6: 1600,
-  7: 1800,
-  8: 1900,
-  9: 2000,
-  10: 2200,
+  6: 1750,
+  7: 1900,
+  8: 2100,
+  9: 2300,
+  10: 2400,
 });
 
 /**
@@ -42,12 +42,24 @@ export const EXERCISE_RATING_RANGES = Object.freeze({
   10: Object.freeze({ min: 1600, max: 1699 }),
 });
 
-// Estos nombres reemplazan al título de temporada cuando se alcanza el nivel.
-export const LEVEL_STAGE_NAMES = Object.freeze({
-  8: 'Torneo de Candidatos',
-  9: 'Campeonato del Mundo',
-  10: 'Defendé la corona',
+/**
+ * NOMBRES ESPECIALES DE NIVEL
+ *
+ * Cada nombre aparece únicamente cuando coinciden el nivel y la temporada
+ * mínima. Antes de esa temporada se conserva el título normal de la pantalla.
+ */
+export const LEVEL_STAGE_RULES = Object.freeze({
+  6: Object.freeze({ minSeason: 6, name: 'Olimpiadas de ajedrez' }),
+  7: Object.freeze({ minSeason: 7, name: 'Torneo Nacional' }),
+  8: Object.freeze({ minSeason: 8, name: 'Torneo de Candidatos' }),
+  9: Object.freeze({ minSeason: 9, name: 'Campeonato del Mundo' }),
+  10: Object.freeze({ minSeason: 10, name: 'Defendé la corona' }),
 });
+
+export function levelStageName(season, level) {
+  const rule = LEVEL_STAGE_RULES[level];
+  return rule && season >= rule.minSeason ? rule.name : null;
+}
 
 export function baseElo(level) {
   return ELO_BY_LEVEL[level] ?? ELO_BY_LEVEL[START_LEVEL];

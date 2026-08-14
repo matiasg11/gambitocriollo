@@ -3,11 +3,13 @@ import { Chess } from 'npm:chess.js@1.4.0';
 import { exercises } from './exercises.js';
 import { debugExercises } from './debug-exercises.js';
 import { careerEvents } from './career-events.js';
+import { decisionAchievement, milestoneAchievement } from './achievements.js';
 import { MAX_LEVEL, MIN_LEVEL, START_LEVEL, baseElo } from './game-config.js';
 
-const CLIENT_VERSION = '1.3.0';
+const CLIENT_VERSION = '1.4.0';
+const PREVIOUS_CLIENT_VERSION = '1.3.0';
 const LEGACY_CLIENT_VERSION = '1.2.0';
-const SUPPORTED_CLIENT_VERSIONS = new Set([LEGACY_CLIENT_VERSION, CLIENT_VERSION]);
+const SUPPORTED_CLIENT_VERSIONS = new Set([LEGACY_CLIENT_VERSION, PREVIOUS_CLIENT_VERSION, CLIENT_VERSION]);
 const LEGACY_ELO_BASE = [600,800,1200,1400,1600,2000,2200,2350,2500,2600,2750];
 const TITLE_RULES = [
   { code: 'FM', threshold: 2300, name: 'Maestro FIDE' },
@@ -142,9 +144,19 @@ function enrichProgress(session: Session, changes: Session) {
   changes.max_elo = Math.max(session.max_elo, elo);
   changes.max_level = Math.max(session.max_level, candidate.level);
   return award ? {
+    id: `title-${award.code.toLowerCase()}`,
     title: `¡Felicitaciones, ${award.name}!`,
     text: `Superaste los ${award.threshold} puntos de ELO. El título ${award.code} es permanente.`,
   } : null;
+}
+
+function uniqueAchievements(awards: Array<any>) {
+  const seen = new Set<string>();
+  return awards.filter((entry) => {
+    if (!entry?.id || seen.has(entry.id)) return false;
+    seen.add(entry.id);
+    return true;
+  });
 }
 
 async function loadSession(admin: any, visitorId: string, sessionId: string) {
@@ -182,10 +194,22 @@ function chooseEvent(session: Session) {
 }
 
 function publicEvent(event: any) {
+  let spotifyUrl = '';
+  try {
+    const candidate = new URL(String(event.spotifyUrl || ''));
+    const hostname = candidate.hostname.toLowerCase();
+    if (candidate.protocol === 'https:' && (hostname === 'open.spotify.com' || hostname === 'spotify.link')) {
+      spotifyUrl = candidate.href;
+    }
+  } catch { /* El enlace es opcional. */ }
+
   return {
     id: event.id,
     title: event.title,
     text: event.text,
+    longText: typeof event.longText === 'string' ? event.longText : '',
+    spotifyUrl,
+    spotifyLabel: spotifyUrl && typeof event.spotifyLabel === 'string' ? event.spotifyLabel : '',
     choices: event.choices.map((choice: any) => ({
       id: choice.id,
       label: choice.label,
@@ -307,10 +331,28 @@ async function completeExercise(admin: any, session: Session, success: boolean, 
     if (changes.season > 10) changes.completed_at = new Date().toISOString();
   }
 
-  const award = enrichProgress(session, changes);
+  const titleAward = enrichProgress(session, changes);
+  const achievements = uniqueAchievements([
+    titleAward,
+    success && session.wins < 1 && changes.wins >= 1 ? milestoneAchievement('first-exercise') : null,
+    success && session.wins < 10 && changes.wins >= 10 ? milestoneAchievement('ten-exercises') : null,
+    success && session.wins < 20 && changes.wins >= 20 ? milestoneAchievement('twenty-exercises') : null,
+    seasonCompleted && correct === 2 ? milestoneAchievement('perfect-season') : null,
+    seasonCompleted && changes.level > previousLevel ? milestoneAchievement(`level-${changes.level}`) : null,
+    seasonCompleted && changes.season > 10 ? milestoneAchievement('career-complete') : null,
+  ]);
   const updated = await casUpdate(admin, session, changes);
   if (updated.completed_at) await registerResult(admin, updated);
-  return { updated, award, seasonCompleted, completedSeason, previousLevel, correct, movement };
+  return {
+    updated,
+    award: achievements[0] ?? null,
+    achievements,
+    seasonCompleted,
+    completedSeason,
+    previousLevel,
+    correct,
+    movement,
+  };
 }
 
 Deno.serve(async (request) => {
@@ -399,10 +441,21 @@ Deno.serve(async (request) => {
         events_done: session.events_done.includes(session.season) ? session.events_done : [...session.events_done, session.season],
         current_event_id: null,
       };
-      const award = enrichProgress(session, changes);
+      const titleAward = enrichProgress(session, changes);
+      const positiveBefore = session.decision_positive;
+      const positiveAfter = changes.decision_positive;
+      const achievements = uniqueAchievements([
+        titleAward,
+        decisionAchievement(event.id, choice.id),
+        success && positiveBefore < 1 && positiveAfter >= 1 ? milestoneAchievement('first-positive-decision') : null,
+        success && positiveBefore < 5 && positiveAfter >= 5 ? milestoneAchievement('five-positive-decisions') : null,
+        success && positiveBefore < 10 && positiveAfter >= 10 ? milestoneAchievement('ten-positive-decisions') : null,
+      ]);
       session = await casUpdate(admin, session, changes);
       return response(request, {
-        ok: true, success, change, baseChange, award,
+        ok: true, success, change, baseChange,
+        award: achievements[0] ?? null,
+        achievements,
         outcome: {
           title: success ? choice.successTitle : choice.failureTitle,
           text: success ? choice.successText : choice.failureText,
