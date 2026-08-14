@@ -48,7 +48,22 @@ declare
   current_elo integer;
   peak_elo integer;
   earned_title text;
-  elo_floors integer[] := array[600,800,1000,1200,1400,1600,1800,1900,2000,2200];
+  elo_floors integer[] := array[600,800,1000,1200,1400,1750,1900,2100,2300,2400];
+  first_names text[] := array[
+    'Juan','María','Martín','Sofía','Nicolás','Valentina','Santiago','Camila',
+    'Mateo','Lucía','Joaquín','Martina','Tomás','Julieta','Lucas','Agustina',
+    'Agustín','Victoria','Francisco','Paula','Facundo','Carla','Gonzalo','Florencia',
+    'Federico','Rocío','Diego','Micaela','Pablo','Daniela','Leandro','Mariana',
+    'Sebastián','Natalia','Andrés','Cecilia','Mariano','Belén','Gabriel','Laura'
+  ];
+  last_names text[] := array[
+    'González','López','Martínez','Pérez','García',
+    'Sánchez','Romero','Díaz','Torres','Álvarez',
+    'Ruiz','Ramírez','Flores','Benítez','Acosta',
+    'Medina','Herrera','Suárez','Aguirre','Giménez',
+    'Pereyra','Rojas','Molina','Castro','Ortiz'
+  ];
+  simulated_name text;
   visitor_uuid uuid;
   session_uuid uuid;
 begin
@@ -130,11 +145,13 @@ begin
       substr(md5('simulation-ranking-v1:session:' || player_number), 17, 4) || '-' ||
       substr(md5('simulation-ranking-v1:session:' || player_number), 21, 12)
     )::uuid;
+    simulated_name := first_names[((player_number - 1) % array_length(first_names, 1)) + 1]
+      || ' ' || last_names[((player_number - 1) / array_length(first_names, 1)) + 1];
 
     insert into gambito_simulated_careers values (
       visitor_uuid,
       session_uuid,
-      'SIM-' || lpad(player_number::text, 4, '0'),
+      simulated_name,
       elo_floors[level_number] + decision_points + exercise_points,
       peak_elo,
       level_number,
