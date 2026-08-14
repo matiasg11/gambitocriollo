@@ -6,10 +6,17 @@ import { careerEvents } from './career-events.js';
 import { decisionAchievement, milestoneAchievement } from './achievements.js';
 import { MAX_LEVEL, MIN_LEVEL, START_LEVEL, baseElo } from './game-config.js';
 
-const CLIENT_VERSION = '1.4.0';
+const CLIENT_VERSION = '1.5.0';
+const PRIOR_CLIENT_VERSION = '1.4.0';
 const PREVIOUS_CLIENT_VERSION = '1.3.0';
 const LEGACY_CLIENT_VERSION = '1.2.0';
-const SUPPORTED_CLIENT_VERSIONS = new Set([LEGACY_CLIENT_VERSION, PREVIOUS_CLIENT_VERSION, CLIENT_VERSION]);
+const SUPPORTED_CLIENT_VERSIONS = new Set([
+  LEGACY_CLIENT_VERSION,
+  PREVIOUS_CLIENT_VERSION,
+  PRIOR_CLIENT_VERSION,
+  CLIENT_VERSION,
+]);
+const CONTENT_DRAW_VERSION = 1;
 const LEGACY_ELO_BASE = [600,800,1200,1400,1600,2000,2200,2350,2500,2600,2750];
 const TITLE_RULES = [
   { code: 'FM', threshold: 2300, name: 'Maestro FIDE' },
@@ -20,6 +27,8 @@ const ALLOWED_ORIGINS = new Set(['https://matiasg11.github.io']);
 
 type JsonRecord = Record<string, unknown>;
 type Session = Record<string, any>;
+type DrawSlot = { exerciseIds: string[]; eventIds: string[] };
+type ContentDraw = { version: number; slots: Record<string, DrawSlot> };
 
 class ApiError extends Error {
   status: number;
@@ -53,6 +62,15 @@ function randomInteger(min: number, max: number) {
   const values = new Uint32Array(1);
   do crypto.getRandomValues(values); while (values[0] >= limit);
   return min + (values[0] % range);
+}
+
+function shuffled<T>(items: T[]) {
+  const result = [...items];
+  for (let index = result.length - 1; index > 0; index--) {
+    const other = randomInteger(0, index);
+    [result[index], result[other]] = [result[other], result[index]];
+  }
+  return result;
 }
 
 function createVisitorToken() {
@@ -178,18 +196,137 @@ async function casUpdate(admin: any, session: Session, changes: Session) {
   return data;
 }
 
-function eligibleEvents(session: Session) {
+function eligibleEventsFor(season: number, level: number) {
   return careerEvents.filter((event: any) =>
-    session.season >= event.minSeason && session.season <= event.maxSeason &&
-    session.level >= event.minLevel && session.level <= event.maxLevel
+    season >= event.minSeason && season <= event.maxSeason &&
+    level >= event.minLevel && level <= event.maxLevel
   );
+}
+
+function eligibleEvents(session: Session) {
+  return eligibleEventsFor(session.season, session.level);
+}
+
+function drawSlotKey(season: number, level: number) {
+  return `${season}:${level}`;
+}
+
+function exerciseId(exercise: any) {
+  return exercise.id || exercise.source.split('/').pop();
+}
+
+function exercisePool(session: Session, level = session.level) {
+  const source = session.debug ? debugExercises : exercises;
+  return source.filter((item: any) =>
+    item.level === level &&
+    (session.debug || session.client_version !== LEGACY_CLIENT_VERSION || item.legacy)
+  );
+}
+
+function drawExercisePair(pool: any[], queue: string[]) {
+  if (pool.length < 2) throw new ApiError(422, 'Cada nivel necesita al menos dos ejercicios distintos.');
+  const allIds = pool.map(exerciseId);
+  const selected: string[] = [];
+  while (selected.length < 2) {
+    if (!queue.length) queue.push(...shuffled(allIds));
+    const candidate = queue.shift()!;
+    if (!selected.includes(candidate)) selected.push(candidate);
+  }
+  return selected;
+}
+
+function buildContentDraw(session: Session): ContentDraw {
+  const slots: Record<string, DrawSlot> = {};
+  const exerciseQueues = new Map<number, string[]>();
+
+  for (let season = 1; season <= 10; season++) {
+    for (let level = MIN_LEVEL; level <= Math.min(MAX_LEVEL, season); level++) {
+      const events = eligibleEventsFor(season, level);
+      if (!events.length) {
+        throw new ApiError(422, `No existe una situación válida para temporada ${season}, nivel ${level}.`);
+      }
+      const pool = exercisePool(session, level);
+      const queue = exerciseQueues.get(level) || [];
+      slots[drawSlotKey(season, level)] = {
+        exerciseIds: drawExercisePair(pool, queue),
+        eventIds: shuffled(events).map((event: any) => event.id),
+      };
+      exerciseQueues.set(level, queue);
+    }
+  }
+
+  return { version: CONTENT_DRAW_VERSION, slots };
+}
+
+function sessionContentDraw(session: Session): ContentDraw | null {
+  const draw = session.content_draw;
+  if (!draw || draw.version !== CONTENT_DRAW_VERSION || !draw.slots || typeof draw.slots !== 'object') return null;
+  return draw as ContentDraw;
+}
+
+function drawSlot(session: Session) {
+  return sessionContentDraw(session)?.slots[drawSlotKey(session.season, session.level)] || null;
+}
+
+function slotExercisesAreValid(session: Session, slot: DrawSlot | null) {
+  if (!slot || !Array.isArray(slot.exerciseIds) || slot.exerciseIds.length !== 2) return false;
+  if (new Set(slot.exerciseIds).size !== 2) return false;
+  const validIds = new Set(exercisePool(session).map(exerciseId));
+  return slot.exerciseIds.every((id) => validIds.has(id));
+}
+
+function slotEventsAreValid(session: Session, slot: DrawSlot | null) {
+  if (!slot || !Array.isArray(slot.eventIds) || !slot.eventIds.length) return false;
+  const validIds = new Set(eligibleEvents(session).map((event: any) => event.id));
+  return slot.eventIds.some((id) => validIds.has(id));
+}
+
+async function ensureContentDraw(admin: any, session: Session) {
+  if (session.client_version !== CLIENT_VERSION || session.season > 10) return session;
+
+  let draw = sessionContentDraw(session);
+  if (!draw) {
+    draw = buildContentDraw(session);
+    return casUpdate(admin, session, { content_draw: draw });
+  }
+
+  const key = drawSlotKey(session.season, session.level);
+  const currentSlot = draw.slots[key] || null;
+  const exercisesValid = slotExercisesAreValid(session, currentSlot);
+  const eventsValid = slotEventsAreValid(session, currentSlot);
+  if (exercisesValid && eventsValid) return session;
+
+  const repairedSlot: DrawSlot = {
+    exerciseIds: exercisesValid
+      ? [...currentSlot!.exerciseIds]
+      : drawExercisePair(exercisePool(session), []),
+    eventIds: eventsValid
+      ? [...currentSlot!.eventIds]
+      : shuffled(eligibleEvents(session)).map((event: any) => event.id),
+  };
+  const repairedDraw: ContentDraw = {
+    ...draw,
+    slots: { ...draw.slots, [key]: repairedSlot },
+  };
+  const changes: Session = { content_draw: repairedDraw };
+  if (!repairedSlot.exerciseIds.includes(session.current_exercise_id)) {
+    changes.current_exercise_id = null;
+    changes.exercise_attempts = 3;
+    changes.exercise_step = 0;
+  }
+  if (!repairedSlot.eventIds.includes(session.current_event_id)) changes.current_event_id = null;
+  return casUpdate(admin, session, changes);
 }
 
 function chooseEvent(session: Session) {
   const allEligible = eligibleEvents(session);
-  const unused = allEligible.filter((event: any) => !session.event_history.includes(event.id));
-  const pool = unused.length ? unused : allEligible;
+  const plannedIds = session.client_version === CLIENT_VERSION ? drawSlot(session)?.eventIds : null;
+  const planned = plannedIds?.map((id) => allEligible.find((event: any) => event.id === id)).filter(Boolean) || [];
+  const candidates = planned.length ? planned : allEligible;
+  const unused = candidates.filter((event: any) => !session.event_history.includes(event.id));
+  const pool = unused.length ? unused : candidates;
   if (!pool.length) throw new ApiError(422, 'No existe una situación válida para esta temporada y nivel.');
+  if (planned.length) return pool[0];
   return pool[(session.season * 7 + session.level * 3 + session.event_history.length) % pool.length];
 }
 
@@ -219,19 +356,16 @@ function publicEvent(event: any) {
 }
 
 function seasonExercises(session: Session) {
-  const source = session.debug ? debugExercises : exercises;
-  const exerciseLevel = session.level;
-  const pool = source.filter((item: any) =>
-    item.level === exerciseLevel &&
-    (session.debug || session.client_version !== LEGACY_CLIENT_VERSION || item.legacy)
-  );
-  if (!pool.length) throw new ApiError(422, `No hay ejercicios para el nivel ${exerciseLevel}.`);
+  const pool = exercisePool(session);
+  if (!pool.length) throw new ApiError(422, `No hay ejercicios para el nivel ${session.level}.`);
+  if (session.client_version === CLIENT_VERSION) {
+    const ids = drawSlot(session)?.exerciseIds || [];
+    const planned = ids.map((id) => pool.find((item: any) => exerciseId(item) === id)).filter(Boolean);
+    if (planned.length !== 2) throw new ApiError(422, 'El presorteo de ejercicios necesita reparación.');
+    return planned;
+  }
   const offset = ((session.season - 1) * 2) % pool.length;
   return [pool[offset], pool[(offset + 1) % pool.length]];
-}
-
-function exerciseId(exercise: any) {
-  return exercise.id || exercise.source.split('/').pop();
 }
 
 function findExercise(session: Session, id: string) {
@@ -378,6 +512,7 @@ Deno.serve(async (request) => {
       const name = String(payload.name || '').replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 18);
       if (!name) throw new ApiError(400, 'Ingresá un nombre para comenzar.');
       const debug = name.toUpperCase() === 'BOCA';
+      const sessionDraft = { debug, client_version: requestedClientVersion };
       const { data: session, error } = await admin.from('gambito_sessions').insert({
         visitor_id: visitorId,
         player_name: name,
@@ -391,6 +526,7 @@ Deno.serve(async (request) => {
           ? LEGACY_ELO_BASE[START_LEVEL]
           : baseElo(START_LEVEL),
         client_version: requestedClientVersion,
+        content_draw: requestedClientVersion === CLIENT_VERSION ? buildContentDraw(sessionDraft) : {},
       }).select('*').single();
       if (error) throw error;
       if (!debug) {
@@ -408,6 +544,7 @@ Deno.serve(async (request) => {
     }
 
     if (action === 'event') {
+      session = await ensureContentDraw(admin, session);
       if (session.completed_at || session.season > 10) throw new ApiError(409, 'La carrera ya terminó.');
       if (session.events_done.includes(session.season)) throw new ApiError(409, 'La decisión de esta temporada ya fue tomada.');
       let event = session.current_event_id
@@ -465,6 +602,7 @@ Deno.serve(async (request) => {
     }
 
     if (action === 'exercise') {
+      session = await ensureContentDraw(admin, session);
       const ensured = await ensureCurrentExercise(admin, session);
       session = ensured.session;
       return response(request, {
@@ -475,6 +613,7 @@ Deno.serve(async (request) => {
     }
 
     if (action === 'move') {
+      session = await ensureContentDraw(admin, session);
       const ensured = await ensureCurrentExercise(admin, session);
       session = ensured.session;
       const exercise = findExercise(session, session.current_exercise_id);
