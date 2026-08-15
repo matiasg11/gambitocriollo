@@ -18,7 +18,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 let state = {
   name:'', countryCode:'', season:1, level:START_LEVEL, wins:0, decisionElo:0, exerciseElo:0, chessTitle:'',
-  achievements:[], pendingAchievements:[], pendingAchievement:null,
   eventsDone:[], introsSeen:[], seasonAnswers:[], eventHistory:[], currentEventId:null,
   decisionPositive:0, decisionTotal:0, exerciseTotal:0, maxElo:baseElo(START_LEVEL), maxLevel:START_LEVEL,
   serverSessionId:null, exerciseAttempts:3, exerciseStep:0, completed:false
@@ -62,9 +61,6 @@ function applyServerState(serverState){
   if(!serverState) return;
   const localOnly = {
     introsSeen:state.introsSeen,
-    achievements:state.achievements,
-    pendingAchievements:state.pendingAchievements,
-    pendingAchievement:state.pendingAchievement,
   };
   state = {...state,...serverState,...localOnly,serverSessionId:serverState.id};
   attempts = state.exerciseAttempts ?? attempts;
@@ -110,47 +106,6 @@ function prefetchEvent(){
 function updatePeaks(){
   state.maxElo = Math.max(Number(state.maxElo) || 0, currentElo());
   state.maxLevel = Math.max(Number(state.maxLevel) || 0, state.level);
-}
-
-function normalizeAchievements(value){
-  const entries = Array.isArray(value) ? value : value ? [value] : [];
-  return entries.filter(entry => entry?.title && entry?.text);
-}
-
-function achievementKey(entry){ return entry.id || `${entry.title}:${entry.text}`; }
-
-function achievementsFromResult(result){
-  return normalizeAchievements(result?.achievements?.length ? result.achievements : result?.award);
-}
-
-function recordAchievements(value){
-  const known = new Set(normalizeAchievements(state.achievements).map(achievementKey));
-  const added = [];
-  normalizeAchievements(value).forEach(entry => {
-    const key = achievementKey(entry);
-    if(known.has(key)) return;
-    known.add(key);
-    added.push(entry);
-  });
-  state.achievements = [...normalizeAchievements(state.achievements),...added];
-  return added;
-}
-
-function showAchievements(value){
-  const awards = normalizeAchievements(value);
-  const box = $('achievement');
-  const list = $('achievementList');
-  box.hidden = !awards.length;
-  list.innerHTML = '';
-  awards.forEach(entry => {
-    const card = document.createElement('article');
-    const title = document.createElement('strong');
-    const description = document.createElement('span');
-    title.textContent = entry.title;
-    description.textContent = entry.text;
-    card.append(title,description);
-    list.appendChild(card);
-  });
 }
 
 function stats(){
@@ -324,8 +279,6 @@ async function tap(squareName){
     }
 
     if(result.stats) latestGlobalStats = result.stats;
-    const earnedNow = recordAchievements(achievementsFromResult(result));
-    if(earnedNow.length) state.pendingAchievements = [...normalizeAchievements(state.pendingAchievements),...earnedNow];
     persist();
 
     if(result.status === 'failed'){
@@ -356,9 +309,7 @@ async function tap(squareName){
       feedback('El rival respondió. Encontrá la continuación.','');
       return;
     }
-
-    const earnedLabel = earnedNow.length ? `${earnedNow.map(entry => entry.title).join(' · ')}. ` : '';
-    feedback(`${earnedLabel}¡Resuelto en el ${4 - attemptsBefore}.º intento! +${result.reward} ELO. ${result.explanation}`,'good');
+    feedback(`¡Resuelto en el ${4 - attemptsBefore}.º intento! +${result.reward} ELO. ${result.explanation}`,'good');
     $('hint').textContent = 'Continuar';
     $('hint').onclick = () => finishExercise(result);
   } catch(error){
@@ -374,14 +325,9 @@ function finishExercise(result){
   if(!result.seasonCompleted){ persist(); stats(); return route(); }
 
   const {completedSeason,correct,previousLevel,movement} = result;
-  const awards = normalizeAchievements(state.pendingAchievements);
-  if(state.pendingAchievement) awards.push(...recordAchievements(state.pendingAchievement));
-  state.pendingAchievements = [];
-  state.pendingAchievement = null;
   persist();
   stats();
   screens('result');
-  showAchievements(awards);
   $('resultTag').textContent = `Temporada ${completedSeason} completada · ${correct}/2 correctos`;
   $('resultTitle').textContent = movement === 'up' ? `Subís al nivel ${state.level}` : movement === 'down' ? `Bajás al nivel ${state.level}` : `Te mantenés en el nivel ${state.level}`;
   $('resultText').textContent = correct === 2 && previousLevel < MAX_LEVEL ? 'Resolviste los dos ejercicios y avanzás un escalón.' : correct === 2 ? 'Resolviste los dos ejercicios y revalidás tu lugar en la cima.' : correct === 1 ? 'Un acierto y un fallo: conservás tu nivel para la próxima temporada.' : previousLevel === MIN_LEVEL ? `Fallaste ambos ejercicios, pero el nivel ${MIN_LEVEL} es el piso de la carrera.` : 'Los dos ejercicios quedaron sin resolver y retrocedés un nivel.';
@@ -437,10 +383,8 @@ async function resolveEvent(choice,box){
   try {
     const result = await serverAction('decision',{choiceId:choice.id});
     applyServerState(result.state);
-    const awards = recordAchievements(achievementsFromResult(result));
     persist();
     screens('result');
-    showAchievements(awards);
     $('resultTag').textContent = result.success ? 'La decisión funciona' : 'La carrera se complica';
     $('resultTitle').textContent = result.outcome.title;
     $('resultText').textContent = `${result.outcome.text} Impacto: ${result.change >= 0 ? '+' : ''}${result.change} ELO.`;
@@ -515,29 +459,6 @@ function renderGlobalStats(globalStats){
   }
   renderHistogram(globalStats);
   renderLeaderboard(globalStats);
-}
-
-function renderFinalAchievements(){
-  const awards = normalizeAchievements(state.achievements);
-  const list = $('finalAchievements');
-  list.innerHTML = '';
-  $('achievementCount').textContent = `${awards.length} ${awards.length === 1 ? 'logro' : 'logros'}`;
-  if(!awards.length){
-    const empty = document.createElement('p');
-    empty.className = 'achievement-empty';
-    empty.textContent = 'Tu próximo recorrido puede desbloquear nuevos logros.';
-    list.appendChild(empty);
-    return;
-  }
-  awards.forEach(entry => {
-    const card = document.createElement('article');
-    const title = document.createElement('strong');
-    const description = document.createElement('span');
-    title.textContent = entry.title;
-    description.textContent = entry.text;
-    card.append(title,description);
-    list.appendChild(card);
-  });
 }
 
 function canvasBlob(canvas){
@@ -631,7 +552,6 @@ async function ending(){
   $('endingText').textContent = 'Diez temporadas, veinte ejercicios y cada decisión tomada dentro y fuera del tablero.';
   $('shareFeedback').textContent = '';
   stats();
-  renderFinalAchievements();
   try {
     if(!latestGlobalStats){
       const result = await serverAction('stats');
@@ -649,7 +569,6 @@ async function ending(){
 
 function showServerError(error){
   screens('result');
-  showAchievements([]);
   $('resultTag').textContent = 'Conexión con el servidor';
   $('resultTitle').textContent = 'No pudimos validar la jugada';
   $('resultText').textContent = `${error.message} El progreso no cambió.`;
