@@ -7,6 +7,7 @@ import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from './backend-config.js';
 import { MAX_LEVEL, MIN_LEVEL, START_LEVEL, baseElo, maxElo, scoreElo, levelStageName } from './game-config.js?v=1.7.0';
 import { seasonScreen } from './season-screens.js';
 import { COUNTRIES, countryLabel } from './countries.js';
+import { careerEvents } from './career-events.js';
 
 const GAME_KEY = 'gambito-v6';
 const VISITOR_KEY = 'gambito-visitor-v1';
@@ -39,6 +40,7 @@ let latestGlobalStats = null;
 let endingScreenshotFile = null;
 let endingScreenshotPromise = null;
 const eventPrefetches = new Map();
+let currentRealStory = null;
 
 async function serverAction(action, values = {}){
   const visitorToken = localStorage.getItem(VISITOR_KEY);
@@ -83,6 +85,71 @@ function safeSpotifyUrl(value){
     return url.protocol === 'https:' && (hostname === 'open.spotify.com' || hostname === 'spotify.link') ? url.href : '';
   } catch { return ''; }
 }
+
+function normalizeRealStory(value){
+  if(!value || typeof value !== 'object') return null;
+
+  const title = String(value.title ?? value.subtitle ?? value.name ?? '').trim();
+  const description = String(value.description ?? value.text ?? '').trim();
+  const spotifyUrl = safeSpotifyUrl(value.spotifyUrl ?? value.spotify ?? '');
+
+  if(!title && !description && !spotifyUrl) return null;
+  return {title,description,spotifyUrl};
+}
+
+function hideRealStory(){
+  const box = $('realStory');
+  const list = $('realStoryList');
+  if(!box || !list) return;
+
+  box.hidden = true;
+  list.innerHTML = '';
+}
+
+function renderRealStory(value){
+  const story = normalizeRealStory(value);
+
+  if(!story){
+    hideRealStory();
+    return;
+  }
+
+  const box = $('realStory');
+  const list = $('realStoryList');
+  if(!box || !list) return;
+
+  const kicker = box.querySelector('.achievement-kicker');
+  if(kicker) kicker.textContent = 'ESTO PASÓ REALMENTE';
+
+  list.innerHTML = '';
+  const card = document.createElement('article');
+
+  if(story.title){
+    const title = document.createElement('strong');
+    title.textContent = story.title;
+    card.appendChild(title);
+  }
+
+  if(story.description){
+    const description = document.createElement('span');
+    description.textContent = story.description;
+    card.appendChild(description);
+  }
+
+  if(story.spotifyUrl){
+    const link = document.createElement('a');
+    link.className = 'spotify-link';
+    link.href = story.spotifyUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = 'Escuchar en Spotify ↗';
+    card.appendChild(link);
+  }
+
+  list.appendChild(card);
+  box.hidden = false;
+}
+
 function persist(){ localStorage.setItem(GAME_KEY, JSON.stringify(state)); }
 function screens(active){ ['intro','puzzle','event','result','ending'].forEach(id => $(id).hidden = id !== active); }
 
@@ -328,6 +395,7 @@ function finishExercise(result){
   persist();
   stats();
   screens('result');
+  hideRealStory();
   $('resultTag').textContent = `Temporada ${completedSeason} completada · ${correct}/2 correctos`;
   $('resultTitle').textContent = movement === 'up' ? `Subís al nivel ${state.level}` : movement === 'down' ? `Bajás al nivel ${state.level}` : `Te mantenés en el nivel ${state.level}`;
   $('resultText').textContent = correct === 2 && previousLevel < MAX_LEVEL ? 'Resolviste los dos ejercicios y avanzás un escalón.' : correct === 2 ? 'Resolviste los dos ejercicios y revalidás tu lugar en la cima.' : correct === 1 ? 'Un acierto y un fallo: conservás tu nivel para la próxima temporada.' : previousLevel === MIN_LEVEL ? `Fallaste ambos ejercicios, pero el nivel ${MIN_LEVEL} es el piso de la carrera.` : 'Los dos ejercicios quedaron sin resolver y retrocedés un nivel.';
@@ -342,6 +410,7 @@ function finishExercise(result){
 }
 
 async function showEvent(finalEvent = false){
+  currentRealStory = null;
   screens('event');
   const box = $('eventChoices');
   box.innerHTML = '<p>El servidor está preparando la situación…</p>';
@@ -353,6 +422,7 @@ async function showEvent(finalEvent = false){
     const result = await (finalEvent ? serverAction('final-event') : (prefetchEvent() || serverAction('event')));
     applyServerState(result.state);
     const event = result.event;
+    currentRealStory = careerEvents.find(candidate => candidate.id === event.id)?.realStory ?? null;
     $('eventTag').textContent = finalEvent ? 'Dilema final · La última decisión' : `Temporada ${state.season} · Situación de carrera`;
     $('eventTitle').textContent = event.title;
     $('eventText').textContent = event.text;
@@ -385,6 +455,8 @@ async function resolveEvent(choice,box){
     applyServerState(result.state);
     persist();
     screens('result');
+    renderRealStory(currentRealStory);
+    currentRealStory = null;
     $('resultTag').textContent = result.success ? 'La decisión funciona' : 'La carrera se complica';
     $('resultTitle').textContent = result.outcome.title;
     $('resultText').textContent = `${result.outcome.text} Impacto: ${result.change >= 0 ? '+' : ''}${result.change} ELO.`;
@@ -569,6 +641,8 @@ async function ending(){
 
 function showServerError(error){
   screens('result');
+  hideRealStory();
+  currentRealStory = null;
   $('resultTag').textContent = 'Conexión con el servidor';
   $('resultTitle').textContent = 'No pudimos validar la jugada';
   $('resultText').textContent = `${error.message} El progreso no cambió.`;
