@@ -335,6 +335,25 @@ function chooseEvent(session: Session) {
   return pool[(session.season * 7 + session.level * 3 + session.event_history.length) % pool.length];
 }
 
+function publicRealStory(value: any) {
+  if (!value || typeof value !== 'object') return null;
+
+  const title = typeof value.title === 'string' ? value.title.trim() : '';
+  const description = typeof value.description === 'string' ? value.description.trim() : '';
+
+  let spotifyUrl = '';
+  try {
+    const candidate = new URL(String(value.spotifyUrl || ''));
+    const hostname = candidate.hostname.toLowerCase();
+    if (candidate.protocol === 'https:' && (hostname === 'open.spotify.com' || hostname === 'spotify.link')) {
+      spotifyUrl = candidate.href;
+    }
+  } catch { /* El enlace es opcional. */ }
+
+  if (!title && !description && !spotifyUrl) return null;
+  return { title, description, spotifyUrl };
+}
+
 function publicEvent(event: any) {
   let spotifyUrl = '';
   try {
@@ -349,6 +368,7 @@ function publicEvent(event: any) {
     id: event.id,
     title: event.title,
     text: event.text,
+    realStory: publicRealStory(event.realStory),
     longText: typeof event.longText === 'string' ? event.longText : '',
     spotifyUrl,
     spotifyLabel: spotifyUrl && typeof event.spotifyLabel === 'string' ? event.spotifyLabel : '',

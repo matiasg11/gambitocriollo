@@ -7,7 +7,6 @@ import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from './backend-config.js';
 import { MAX_LEVEL, MIN_LEVEL, START_LEVEL, baseElo, maxElo, scoreElo, levelStageName } from './game-config.js?v=1.7.0';
 import { seasonScreen } from './season-screens.js';
 import { COUNTRIES, countryLabel } from './countries.js';
-import { careerEvents } from './career-events.js';
 
 const GAME_KEY = 'gambito-v6';
 const VISITOR_KEY = 'gambito-visitor-v1';
@@ -422,7 +421,7 @@ async function showEvent(finalEvent = false){
     const result = await (finalEvent ? serverAction('final-event') : (prefetchEvent() || serverAction('event')));
     applyServerState(result.state);
     const event = result.event;
-    currentRealStory = careerEvents.find(candidate => candidate.id === event.id)?.realStory ?? null;
+    currentRealStory = event.realStory ?? null;
     $('eventTag').textContent = finalEvent ? 'Dilema final · La última decisión' : `Temporada ${state.season} · Situación de carrera`;
     $('eventTitle').textContent = event.title;
     $('eventText').textContent = event.text;
