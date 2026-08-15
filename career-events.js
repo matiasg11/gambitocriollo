@@ -9,12 +9,18 @@
  * - successElo / failureElo: puntos que se acumulan sobre el ELO base del nivel.
  */
 export const careerEvents = [
- {id:'birthday-debut',minSeason:1,maxSeason:2,minLevel:1,maxLevel:2,title:'El cumpleaños y el debut',text:'El club organiza un torneo importante justo la noche del cumpleaños de tu hermana. Tu familia ya reservó la mesa.',choices:[
+ {id:'birthday-debut',minSeason:1,maxSeason:1,minLevel:1,maxLevel:2,title:'El cumpleaños y el debut',text:'El club organiza un torneo importante justo la noche del cumpleaños de tu hermana. Tu familia ya reservó la mesa.',
+  realStory: {
+    title: 'El caso Hans Niemann vs. Magnus Carlsen',
+    description: 'En 2022, una partida entre Niemann y Carlsen desencadenó una de las mayores polémicas recientes del ajedrez...',
+    spotifyUrl: 'https://open.spotify.com/episode/...'
+  },
+  choices:[
   {id:'play',label:'Jugar tu primer torneo',description:'Pedís perdón y corrés al club.',chance:65,successElo:15,failureElo:-15,successTitle:'Una noche inolvidable',successText:'Ganás una partida imposible y llegás al brindis con el trofeo bajo el brazo.',failureTitle:'Ni partida ni torta',failureText:'Perdés rápido y cuando llegás ya apagaron las velitas.'},
   {id:'family',label:'Elegir a la familia',description:'Le explicás a tu instructor que esta vez no podés.',chance:85,successElo:0,failureElo:-10,successTitle:'El ajedrez también sabe esperar',successText:'El instructor valora que hayas hablado de frente y te reserva el tablero para el próximo torneo.',failureTitle:'El tren no espera',failureText:'Otro juvenil ocupa tu lugar y juega tan bien que se queda con el título y el primer tablero del equipo.'}]},
  
 	
-	{id:'first-open-road',minSeason:1,maxSeason:3,minLevel:1,maxLevel:10,title:'La ruta al primer abierto',text:'El torneo empieza temprano y queda a 600 kilómetros. El presupuesto alcanza para una sola comodidad.',choices:[
+	{id:'first-open-road',minSeason:2,maxSeason:3,minLevel:1,maxLevel:10,title:'La ruta al primer abierto',text:'El torneo empieza temprano y queda a 600 kilómetros. El presupuesto alcanza para una sola comodidad.',choices:[
   {id:'bus',label:'Viajar de noche en micro',description:'Ahorrás plata, pero llegás directo a la ronda.',chance:55,successElo:15,failureElo:-15,successTitle:'Dormir es para después',successText:'Bajás del micro, tomás un mate y jugás la mejor partida de tu vida.',failureTitle:'La cabeza sigue en la ruta',failureText:'Confundís una combinación sencilla después de cabecear frente al tablero.'},
   {id:'hotel',label:'Pagar una noche de hotel',description:'Llegás descansado, aunque volvés sin un peso.',chance:62,successElo:15,failureElo:-11,successTitle:'Descanso bien invertido',successText:'La preparación aparece completa cuando el rival entra en tu variante.',failureTitle:'La almohada no juega',failureText:'Dormiste perfecto. Tanto que te quedó la cabeza en la almohada. Una sorpresa de apertura te deja sin respuestas.'}]},
 	
