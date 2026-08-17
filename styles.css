@@ -53,7 +53,24 @@ header{height:76px;padding:0 clamp(20px,5vw,60px);display:flex;align-items:cente
 }
 .puzzle-grid{display:grid;grid-template-columns:minmax(300px,500px) minmax(190px,1fr);gap:32px;align-items:center;min-width:0}.board-wrap{width:min(100%,500px);min-width:0}
 .board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));width:100%;aspect-ratio:1/1;border:5px solid var(--ink);box-shadow:7px 7px var(--orange);overflow:hidden}
-.square{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100%;min-width:0;min-height:0;aspect-ratio:1/1;overflow:hidden;border:0;padding:0;background:#e8d5ac;cursor:pointer}.square.dark{background:#8f4e35}.square.selected{outline:5px solid var(--yellow);outline-offset:-5px;z-index:1}.square.last{box-shadow:inset 0 0 0 4px var(--orange)}.square.in-check{box-shadow:inset 0 0 0 5px #b51f1f,inset 0 0 22px #b51f1faa;animation:check-pulse .8s ease-in-out 2}.square.last.in-check{box-shadow:inset 0 0 0 5px #b51f1f,inset 0 0 22px #b51f1faa,0 0 0 4px var(--orange)}
+.square{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100%;min-width:0;min-height:0;aspect-ratio:1/1;overflow:hidden;border:0;padding:0;background:#e8d5ac;cursor:pointer}.square.dark{background:#8f4e35}.square.selected{ z-index:3;
+  box-shadow:
+    inset 0 0 0 6px var(--yellow),
+    inset 0 0 0 9px var(--ink);}.square.selected .piece-image{
+  transform:translateY(-4px) scale(1.12);
+  filter:drop-shadow(0 6px 2px #0008);
+}.square.selected .piece-image{
+  animation:piece-selected .18s ease-out;
+}
+
+@keyframes piece-selected{
+  from{
+    transform:translateY(0) scale(1);
+  }
+  to{
+    transform:translateY(-4px) scale(1.12);
+  }
+}.square.last{box-shadow:inset 0 0 0 4px var(--orange)}.square.in-check{box-shadow:inset 0 0 0 5px #b51f1f,inset 0 0 22px #b51f1faa;animation:check-pulse .8s ease-in-out 2}.square.last.in-check{box-shadow:inset 0 0 0 5px #b51f1f,inset 0 0 22px #b51f1faa,0 0 0 4px var(--orange)}
 @keyframes check-pulse{50%{filter:brightness(1.35)}}
 .piece-image{display:block;width:88%;height:88%;object-fit:contain;pointer-events:none;user-select:none;position:relative;z-index:1}
 .coordinate{position:absolute;z-index:2;font-size:10px;font-weight:800;line-height:1;pointer-events:none;color:var(--ink)}.coordinate.file{right:4px;bottom:3px}.coordinate.rank{left:4px;top:4px}.square.dark .coordinate{color:var(--cream)}
