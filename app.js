@@ -701,3 +701,11 @@ $('share').onclick = shareResults;
 // Cada vez que se abre la web, la carrera comienza desde cero.
 // Esto NO afecta el autocompletado del navegador.
 localStorage.removeItem(GAME_KEY);
+// Si el navegador restaura la página desde su caché de navegación,
+// forzamos una carga nueva para no volver a una partida empezada.
+window.addEventListener('pageshow', event => {
+  if(event.persisted){
+    localStorage.removeItem(GAME_KEY);
+    location.reload();
+  }
+});
