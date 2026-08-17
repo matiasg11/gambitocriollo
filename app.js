@@ -680,20 +680,24 @@ COUNTRIES.forEach(country => {
   option.textContent = `${country.flag} ${country.name}`;
   $('country').appendChild(option);
 });
+$('country').value = 'AR';
 $('reset').onclick = reset;
 $('again').onclick = playAgain;
 $('share').onclick = shareResults;
 
-const saved = localStorage.getItem(GAME_KEY);
-if(saved){
-  try {
-    state = {...state, ...JSON.parse(saved)};
-    if(state.name && state.serverSessionId){
-      serverAction('current').then(result => {
-        applyServerState(result.state);
-        enterGame();
-      }).catch(() => localStorage.removeItem(GAME_KEY));
-    }
-  }
-  catch { localStorage.removeItem(GAME_KEY); }
-}
+// const saved = localStorage.getItem(GAME_KEY);
+// if(saved){
+//   try {
+//     state = {...state, ...JSON.parse(saved)};
+//     if(state.name && state.serverSessionId){
+//       serverAction('current').then(result => {
+//         applyServerState(result.state);
+//         enterGame();
+//       }).catch(() => localStorage.removeItem(GAME_KEY));
+//     }
+//   }
+//   catch { localStorage.removeItem(GAME_KEY); }
+// }
+// Cada vez que se abre la web, la carrera comienza desde cero.
+// Esto NO afecta el autocompletado del navegador.
+localStorage.removeItem(GAME_KEY);
