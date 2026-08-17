@@ -36,7 +36,7 @@ export const careerEvents = [
 
 {id:'championship-demands',minSeason:7,maxSeason:10,minLevel:6,maxLevel:10,
   title:'Las condiciones del campeón',text:'Sos campeón del circuito y llega el momento de defender el título. El reglamento nuevo no te convence y creés que favorece demasiado al retador. Podés exigir modificaciones, aunque la organización ya anunció la fecha del match.',
-  finalOnly:true,
+  finalCandidate:true,
   realStory: {
     title: 'Fischer pierde el título sin jugar (1975).',
     description: 'Fischer exigió un match ilimitado a diez victorias y que un empate 9–9 favoreciera al campeón. FIDE rechazó la última condición y Fischer no se presentó; Anatoly Karpov fue proclamado campeón mundial por defecto.',
@@ -71,6 +71,7 @@ export const careerEvents = [
 
 {id:'match-conditions',minSeason:6,maxSeason:10,minLevel:5,maxLevel:10,
   title:'Las condiciones del match',text:'Podés pedir una sala silenciosa y cerrada o aceptar un escenario con público para acercar el ajedrez a más gente.',
+  finalCandidate:true,
   realStory: {
     title: 'Fischer–Spassky: el “Match del Siglo” (1972).',
     description: 'Fischer discutió premios, cámaras, iluminación, público y condiciones de juego; no se presentó a la segunda partida y la perdió por incomparecencia. El encuentro llegó a estar cerca de cancelarse y adquirió una enorme dimensión política por la Guerra Fría.',
@@ -105,7 +106,7 @@ export const careerEvents = [
 
 {id:'rematch-negotiation',minSeason:6,maxSeason:10,minLevel:5,maxLevel:10,
   title:'La revancha pendiente',text:'Acabás de conquistar un título derrotando al campeón anterior. Él reclama una revancha inmediata, pero vos controlás buena parte de las condiciones y sabés que enfrentarlo nuevamente puede poner en riesgo todo lo conseguido.',
-  finalOnly:true,
+  finalCandidate:true,
   realStory: {
     title: 'Alekhine evita la revancha con Capablanca (1927–1946).',
     description: 'Después de quitarle el título mundial, Alexander Alekhine nunca concedió a José Raúl Capablanca la esperada revancha. Las exigencias económicas y la enemistad entre ambos alimentaron durante décadas la discusión sobre si el campeón lo estaba esquivando.',
@@ -242,6 +243,7 @@ export const careerEvents = [
 
 {id:'shared-championship',minSeason:7,maxSeason:10,minLevel:6,maxLevel:10,
   title:'Una final que no termina',text:'Después de horas de desempates, vos y tu rival siguen completamente igualados. El reglamento indica que deben continuar jugando hasta que haya un ganador, pero ambos están exhaustos.',
+  finalCandidate:true,
   realStory: {
     title: 'Carlsen y Nepomniachtchi comparten el Mundial de blitz (2024).',
     description: 'Tras empatar 2–2 la final y encadenar tres tablas en la muerte súbita, Carlsen propuso compartir el título. Nepomniachtchi aceptó y FIDE autorizó una solución que no estaba prevista expresamente como desenlace normal del formato. Parte del ambiente ajedrecístico criticó que las reglas se modificaran durante la propia final.',
@@ -382,6 +384,7 @@ export const careerEvents = [
 
 {id:'fever-before-qualifier',minSeason:3,maxSeason:9,minLevel:1,maxLevel:10,
   title:'Fiebre antes de la selección',text:'Te levantás con fiebre el día del clasificatorio. El médico recomienda descanso, pero no habrá otra oportunidad este año.',
+  finalCandidate:true,
   choices:[
   {id:'rest',
    label:'Escuchar al médico',description:'Cuidás tu salud y te repones.',chance:18,successElo:10,failureElo:-15,
@@ -466,7 +469,7 @@ export const careerEvents = [
 
 {id:'final-teach-or-play',minSeason:9,maxSeason:10,minLevel:1,maxLevel:10,
   title:'La mesa que queda libre',text:'El club que te formó quiere que dirijas su escuela. Al mismo tiempo llega una invitación para seguir una temporada más en el circuito profesional.',
-  
+  finalCandidate:true,
   choices:[
   {id:'teach',
    label:'Volver para enseñar',description:'Convertís tu experiencia en el comienzo de otras carreras.',chance:90,successElo:12,failureElo:-5,
@@ -479,6 +482,7 @@ export const careerEvents = [
 
 {id:'final-book-offer',minSeason:9,maxSeason:10,minLevel:1,maxLevel:10,
   title:'Las páginas de la carrera',text:'Una editorial quiere publicar tus cuadernos de preparación. Para contar toda la verdad tendrías que revelar errores, discusiones y secretos compartidos por tu equipo.',
+  finalCandidate:true,
   choices:[
   {id:'publish-all',
    label:'Publicar sin recortes',description:'Contás la historia completa, incluso lo incómodo.',chance:58,successElo:15,failureElo:-15,

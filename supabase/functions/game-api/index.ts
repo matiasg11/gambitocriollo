@@ -14,7 +14,7 @@ const LEGACY_CLIENT_VERSION = '1.2.0';
 const SUPPORTED_CLIENT_VERSIONS = new Set([CLIENT_VERSION, LIVE_CLIENT_VERSION]);
 const CONTENT_DRAW_CLIENT_VERSIONS = new Set([CLIENT_VERSION, LIVE_CLIENT_VERSION]);
 const COUNTRY_CODES = new Set(['AF','AL','DE','AD','AO','AG','SA','DZ','AR','AM','AU','AT','AZ','BS','BD','BB','BH','BE','BZ','BJ','BY','MM','BO','BA','BW','BR','BN','BG','BF','BI','BT','CV','KH','CM','CA','QA','TD','CL','CN','CY','CO','KM','CG','CD','KP','KR','CI','CR','HR','CU','DK','DM','EC','EG','SV','AE','ER','SK','SI','ES','US','EE','SZ','ET','PH','FI','FJ','FR','GA','GM','GE','GH','GD','GR','GT','GN','GQ','GW','GY','HT','HN','HU','IN','ID','IQ','IR','IE','IS','MH','SB','IL','IT','JM','JP','JO','KZ','KE','KG','KI','KW','LA','LS','LV','LB','LR','LY','LI','LT','LU','MK','MG','MY','MW','MV','ML','MT','MA','MU','MR','MX','FM','MD','MC','MN','ME','MZ','NA','NR','NP','NI','NE','NG','NO','NZ','OM','NL','PK','PW','PA','PG','PY','PE','PL','PT','GB','CF','CZ','DO','RW','RO','RU','WS','KN','SM','VC','LC','ST','SN','RS','SC','SL','SG','SY','SO','LK','ZA','SD','SS','SE','CH','SR','TH','TZ','TJ','TL','TG','TO','TT','TN','TM','TR','TV','UA','UG','UY','UZ','VU','VA','VE','VN','YE','DJ','ZM','ZW','PS']);
-const CONTENT_DRAW_VERSION = 1;
+const CONTENT_DRAW_VERSION = 2;
 const LEGACY_ELO_BASE = [600,800,1200,1400,1600,2000,2200,2350,2500,2600,2750];
 const TITLE_RULES = [
   { code: 'FM', threshold: 2300, name: 'Maestro FIDE' },
@@ -26,7 +26,11 @@ const ALLOWED_ORIGINS = new Set(['https://matiasg11.github.io']);
 type JsonRecord = Record<string, unknown>;
 type Session = Record<string, any>;
 type DrawSlot = { exerciseIds: string[]; eventIds: string[] };
-type ContentDraw = { version: number; slots: Record<string, DrawSlot> };
+type ContentDraw = {
+  version: number;
+  finalEventId: string;
+  slots: Record<string, DrawSlot>;
+};
 
 class ApiError extends Error {
   status: number;
@@ -196,22 +200,33 @@ async function casUpdate(admin: any, session: Session, changes: Session) {
   return data;
 }
 
-function eligibleEventsFor(season: number, level: number) {
-  const eligible = careerEvents.filter((event: any) =>
-    season >= event.minSeason && season <= event.maxSeason &&
-    level >= event.minLevel && level <= event.maxLevel
-  );
-  return eligible.filter((event: any) => !event.finalOnly);
+function finalEvents() {
+  return careerEvents.filter((event: any) => event.finalCandidate);
 }
 
-function finalEvents() {
-  return careerEvents.filter((event: any) => event.finalOnly);
+function eligibleEventsFor(
+  season: number,
+  level: number,
+  reservedFinalEventId = ''
+) {
+  return careerEvents.filter((event: any) =>
+    event.id !== reservedFinalEventId &&
+    season >= event.minSeason &&
+    season <= event.maxSeason &&
+    level >= event.minLevel &&
+    level <= event.maxLevel
+  );
 }
 
 function eligibleEvents(session: Session) {
-  return eligibleEventsFor(session.season, session.level);
-}
+  const finalEventId = sessionContentDraw(session)?.finalEventId || '';
 
+  return eligibleEventsFor(
+    session.season,
+    session.level,
+    finalEventId
+  );
+}
 function drawSlotKey(season: number, level: number) {
   return `${season}:${level}`;
 }
@@ -260,9 +275,18 @@ function buildContentDraw(session: Session): ContentDraw {
   const slots: Record<string, DrawSlot> = {};
   const exerciseQueues = new Map<number, string[]>();
 
+  const candidates = finalEvents();
+
+  if (!candidates.length) {
+    throw new ApiError(422, 'No hay dilemas candidatos a final.');
+  }
+
+  // El final queda decidido al comenzar la carrera.
+  const finalEventId = shuffled(candidates)[0].id;
+
   for (let season = 1; season <= 10; season++) {
     for (let level = MIN_LEVEL; level <= Math.min(MAX_LEVEL, season); level++) {
-      const events = eligibleEventsFor(season, level);
+      const events = eligibleEventsFor(season, level, finalEventId);
       if (!events.length) {
         throw new ApiError(422, `No existe una situación válida para temporada ${season}, nivel ${level}.`);
       }
@@ -276,12 +300,32 @@ function buildContentDraw(session: Session): ContentDraw {
     }
   }
 
-  return { version: CONTENT_DRAW_VERSION, slots };
+  return {
+  version: CONTENT_DRAW_VERSION,
+  finalEventId,
+  slots
+};
 }
 
 function sessionContentDraw(session: Session): ContentDraw | null {
   const draw = session.content_draw;
-  if (!draw || draw.version !== CONTENT_DRAW_VERSION || !draw.slots || typeof draw.slots !== 'object') return null;
+
+  if (
+    !draw ||
+    draw.version !== CONTENT_DRAW_VERSION ||
+    typeof draw.finalEventId !== 'string' ||
+    !draw.slots ||
+    typeof draw.slots !== 'object'
+  ) {
+    return null;
+  }
+
+  const validFinal = finalEvents().some(
+    (event: any) => event.id === draw.finalEventId
+  );
+
+  if (!validFinal) return null;
+
   return draw as ContentDraw;
 }
 
@@ -601,15 +645,25 @@ Deno.serve(async (request) => {
     if (action === 'final-event') {
       if (session.completed_at) throw new ApiError(409, 'La carrera ya terminó.');
       if (session.season !== 11) throw new ApiError(409, 'El dilema final aparece después de completar la temporada 10.');
-      let event = session.current_event_id
-        ? finalEvents().find((candidate: any) => candidate.id === session.current_event_id)
-        : null;
-      if (!event) {
-        const candidates = finalEvents();
-        if (!candidates.length) throw new ApiError(422, 'No hay dilemas finales configurados.');
-        event = shuffled(candidates)[0];
-        session = await casUpdate(admin, session, { current_event_id: event.id });
-      }
+      const finalEventId = sessionContentDraw(session)?.finalEventId;
+
+if (!finalEventId) {
+  throw new ApiError(422, 'La carrera no tiene un dilema final reservado.');
+}
+
+let event = finalEvents().find(
+  (candidate: any) => candidate.id === finalEventId
+);
+
+if (!event) {
+  throw new ApiError(422, 'El dilema final reservado ya no existe.');
+}
+
+if (session.current_event_id !== event.id) {
+  session = await casUpdate(admin, session, {
+    current_event_id: event.id
+  });
+}
       return response(request, { ok: true, event: publicEvent(event), state: publicSession(session) });
     }
 
@@ -619,10 +673,17 @@ Deno.serve(async (request) => {
       }
       const event = careerEvents.find((candidate: any) => candidate.id === session.current_event_id);
       const choice = event?.choices.find((candidate: any) => candidate.id === payload.choiceId);
-      const finalEvent = Boolean(event?.finalOnly);
+      const reservedFinalEventId =
+  sessionContentDraw(session)?.finalEventId || '';
+
+const finalEvent =
+  session.season === 11 &&
+  event?.id === reservedFinalEventId;
       const eventIsValid = finalEvent
-        ? session.season === 11 && !session.completed_at
-        : eligibleEvents(session).some((candidate: any) => candidate.id === event?.id);
+  ? session.season === 11 && !session.completed_at
+  : eligibleEvents(session).some(
+      (candidate: any) => candidate.id === event?.id
+    );
       if (!event || !choice || !eventIsValid) {
         throw new ApiError(422, 'La alternativa no corresponde a la situación actual.');
       }
