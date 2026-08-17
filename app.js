@@ -339,7 +339,7 @@ async function tap(squareName){
 
     if(result.status === 'wrong'){
       chess = new Chess(initialPuzzleFen); step = 0; selected = null; last = []; attempts = result.attempts;
-      feedback(`No es la línea buscada. Te quedan ${attempts} intentos; la posición vuelve al inicio.`, 'bad');
+      feedback(`❌ ¡INCORRECTO! Te quedan ${attempts} intentos. La posición vuelve al inicio.`, 'bad');
       render();
       return;
     }
@@ -350,7 +350,7 @@ async function tap(squareName){
     if(result.status === 'failed'){
       chess = new Chess(initialPuzzleFen); step = 0; selected = null; last = []; attempts = 0;
       render();
-      feedback(`Sin intentos. Solución: ${result.solution}. ${result.explanation}`, 'bad');
+      feedback(`❌ SIN INTENTOS. Solución: ${result.solution}. ${result.explanation}`, 'bad');
       $('hint').textContent = 'Continuar';
       $('hint').onclick = () => finishExercise(result);
       return;
@@ -360,7 +360,7 @@ async function tap(squareName){
     last = [move.from,move.to];
     step++;
     attempts = attemptsBefore;
-    feedback('¡Buena jugada! Calculando la respuesta…','good');
+    feedback('✅ ¡CORRECTO! Calculando la respuesta del rival…','good');
     render();
 
     if(result.opponentMove){
@@ -375,7 +375,7 @@ async function tap(squareName){
       feedback('El rival respondió. Encontrá la continuación.','');
       return;
     }
-    feedback(`¡Resuelto en el ${4 - attemptsBefore}.º intento! +${result.reward} ELO. ${result.explanation}`,'good');
+    feedback(`✅ ¡RESUELTO! Lo lograste en el ${4 - attemptsBefore}.º intento. +${result.reward} ELO. ${result.explanation}`,'good');
     $('hint').textContent = 'Continuar';
     $('hint').onclick = () => finishExercise(result);
   } catch(error){

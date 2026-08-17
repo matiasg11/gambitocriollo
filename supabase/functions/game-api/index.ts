@@ -222,10 +222,26 @@ function exerciseId(exercise: any) {
 
 function exercisePool(session: Session, level = session.level) {
   const source = session.debug ? debugExercises : exercises;
-  return source.filter((item: any) =>
-    item.level === level &&
-    (session.debug || session.client_version !== LEGACY_CLIENT_VERSION || item.legacy)
-  );
+
+  return source.filter((item: any) => {
+    if (item.level !== level) return false;
+
+    // En Nivel 1 solamente se juegan ejercicios de Mate en 1.
+    // Siguen siendo ejercicios pertenecientes al Nivel 1.
+    if (
+      level === 1 &&
+      !item.themes?.includes('mateIn1') &&
+      !String(item.title || '').toLowerCase().includes('mate en 1')
+    ) {
+      return false;
+    }
+
+    return (
+      session.debug ||
+      session.client_version !== LEGACY_CLIENT_VERSION ||
+      item.legacy
+    );
+  });
 }
 
 function drawExercisePair(pool: any[], queue: string[]) {
