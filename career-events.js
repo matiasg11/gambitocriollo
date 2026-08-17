@@ -36,6 +36,7 @@ export const careerEvents = [
 
 {id:'championship-demands',minSeason:7,maxSeason:10,minLevel:6,maxLevel:10,
   title:'Las condiciones del campeón',text:'Sos campeón del circuito y llega el momento de defender el título. El reglamento nuevo no te convence y creés que favorece demasiado al retador. Podés exigir modificaciones, aunque la organización ya anunció la fecha del match.',
+  finalOnly:true,
   realStory: {
     title: 'Fischer pierde el título sin jugar (1975).',
     description: 'Fischer exigió un match ilimitado a diez victorias y que un empate 9–9 favoreciera al campeón. FIDE rechazó la última condición y Fischer no se presentó; Anatoly Karpov fue proclamado campeón mundial por defecto.',
@@ -68,7 +69,7 @@ export const careerEvents = [
    successTitle:'Otra puerta se abre',successText:'Poco después recibís una invitación equivalente en una sede sin restricciones.',
    failureTitle:'Una oportunidad irrepetible',failureText:'El match se juega con otro participante y se convierte en el evento más comentado del año.'}]},
 
-{id:'match-conditions',minSeason:6,maxSeason:9,minLevel:5,maxLevel:10,
+{id:'match-conditions',minSeason:6,maxSeason:10,minLevel:5,maxLevel:10,
   title:'Las condiciones del match',text:'Podés pedir una sala silenciosa y cerrada o aceptar un escenario con público para acercar el ajedrez a más gente.',
   realStory: {
     title: 'Fischer–Spassky: el “Match del Siglo” (1972).',
@@ -104,6 +105,7 @@ export const careerEvents = [
 
 {id:'rematch-negotiation',minSeason:6,maxSeason:10,minLevel:5,maxLevel:10,
   title:'La revancha pendiente',text:'Acabás de conquistar un título derrotando al campeón anterior. Él reclama una revancha inmediata, pero vos controlás buena parte de las condiciones y sabés que enfrentarlo nuevamente puede poner en riesgo todo lo conseguido.',
+  finalOnly:true,
   realStory: {
     title: 'Alekhine evita la revancha con Capablanca (1927–1946).',
     description: 'Después de quitarle el título mundial, Alexander Alekhine nunca concedió a José Raúl Capablanca la esperada revancha. Las exigencias económicas y la enemistad entre ambos alimentaron durante décadas la discusión sobre si el campeón lo estaba esquivando.',
@@ -191,7 +193,7 @@ export const careerEvents = [
   title:'La primera jugada',text:'Arranca el Torneo Nacional y el presidente realiza ceremonialmente tu primer movimiento: 1. e4. Vos preparaste 1. d4. ¿Cambiás el movimiento?',
   realStory: {
     title: 'Najdorf corrige a Perón',
-    description: 'En un Match contra la URSS en 1954, el ya argentino Miguel Najdord juega contra David Bronstein. Perón juega 1.e4, pero Najdord vuelve atrás y lo cambia por 1.d4 ante la mirada atónita del soviético que jamás podría hacer eso en su país.',
+    description: 'En un Match contra la URSS en 1954, el ya argentino Miguel Najdorf juega contra David Bronstein. Perón juega 1.e4, pero Najdorf vuelve atrás y lo cambia por 1.d4 ante la mirada atónita del soviético que jamás podría hacer eso en su país.',
     spotifyUrl: 'https://open.spotify.com/episode/5XIUyIjgJvuSE4AoH2BIbD?si=o6a1rYUsQ7eVNeC5o4gVVQ&utm_source=copy-link&sci=spotify%3Acard-config%3A4S1gYhDgqMgtISZbJuOtLg'
   },
   choices:[
@@ -201,7 +203,7 @@ export const careerEvents = [
    failureTitle:'No conocerá de ajedrez, pero conoce a las personas',failureText:'Tu rival esperaba exactamente 1. d4 y entra en una preparación demoledora.'},
   {id:'keep',
    label:'Mantener 1. e4',description:'Confiar en la intuición presidencial.',chance:80,successElo:15,failureElo:-12,
-   successTitle:'###Por algo es el conductor del movimiento político más grande de la historia de Latinoamérica',successText:'Por algo es el conductor del movimiento político más grande de la historia de Latinoamérica',
+   successTitle:'El presidente sabe lo que hace',successText:'Por algo es el conductor del movimiento político más grande de la historia de Latinoamérica',
    failureTitle:'El presidente esperaba valentía',failureText:'El presidente se ofende: “No necesitamos obsecuentes sino personas valientes que se atrevan a hacer los mejores movimientos por la patria”.'}]},
 
 {id:'marathon-match',minSeason:7,maxSeason:10,minLevel:6,maxLevel:10,
@@ -342,7 +344,7 @@ export const careerEvents = [
    successTitle:'Conocer no es dominar',successText:'Entrás en la línea publicada y encontrás una mejora sobre el tablero.',
    failureTitle:'Te estaba esperando',failureText:'El rival reproduce su preparación hasta conseguir una posición ganadora.'}]},
 
-{id:'master-draw-offer',minSeason:3,maxSeason:10,minLevel:3,maxLevel:10,
+{id:'master-draw-offer',minSeason:3,maxSeason:10,minLevel:3,maxLevel:7,
   title:'La oferta del maestro',text:'Un gran maestro te ofrece tablas. La posición parece favorable, pero quedan dos minutos en el reloj.',
   choices:[
   {id:'reject',
@@ -464,6 +466,7 @@ export const careerEvents = [
 
 {id:'final-teach-or-play',minSeason:9,maxSeason:10,minLevel:1,maxLevel:10,
   title:'La mesa que queda libre',text:'El club que te formó quiere que dirijas su escuela. Al mismo tiempo llega una invitación para seguir una temporada más en el circuito profesional.',
+  
   choices:[
   {id:'teach',
    label:'Volver para enseñar',description:'Convertís tu experiencia en el comienzo de otras carreras.',chance:90,successElo:12,failureElo:-5,
