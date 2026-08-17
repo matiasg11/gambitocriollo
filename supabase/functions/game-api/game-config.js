@@ -18,9 +18,9 @@ export const ELO_BY_LEVEL = Object.freeze({
   5: 1400,
   6: 1750,
   7: 1900,
-  8: 2550,
-  9: 2650,
-  10: 2700,
+  8: 2150,
+  9: 2350,
+  10: 2400,
 });
 
 export const MAX_ELO_BY_LEVEL = Object.freeze({
