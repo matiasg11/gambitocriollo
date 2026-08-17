@@ -229,7 +229,7 @@ function exercisePool(session: Session, level = session.level) {
     // En Nivel 1 solamente se juegan ejercicios de Mate en 1.
     // Siguen siendo ejercicios pertenecientes al Nivel 1.
     if (
-      level === 1 &&
+      level <= 4 &&
       !item.themes?.includes('mateIn1') &&
       !String(item.title || '').toLowerCase().includes('mate en 1')
     ) {
