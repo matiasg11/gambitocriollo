@@ -22,7 +22,8 @@ export const careerEvents = [
   realStory: {
     title: 'Karpov–Korchnoi y el “yogur codificado” (1978).',
     description: 'El equipo de Korchnoi denunció que el yogur entregado a Karpov podía transmitir instrucciones mediante su sabor o el momento de la entrega. El encuentro también tuvo disputas sobre banderas, apretones de manos, parapsicólogos y el gurú del equipo de Korchnoi.',
-    spotifyUrl: 'https://open.spotify.com/episode/3XWFhAkJc4hPoYOsiFEr3C?si=GAa3g4epTYGXJz5OSOtmGA&utm_source=copy-link&sci=spotify%3Acard-config%3A1Lco8nfmQSqXgHm2YmY'
+    spotifyUrl: 'https://open.spotify.com/episode/3XWFhAkJc4hPoYOsiFEr3C?si=GAa3g4epTYGXJz5OSOtmGA&utm_source=copy-link&sci=spotify%3Acard-config%3A1Lco8nfmQSqXgHm2YmY',
+    image: "assets/images/yogur.jpg"
   },
   choices:[
   {id:'report-drinks',
@@ -40,7 +41,8 @@ export const careerEvents = [
   realStory: {
     title: 'Fischer pierde el título sin jugar (1975).',
     description: 'Fischer exigió un match ilimitado a diez victorias y que un empate 9–9 favoreciera al campeón. FIDE rechazó la última condición y Fischer no se presentó; Anatoly Karpov fue proclamado campeón mundial por defecto.',
-    spotifyUrl: 'https://open.spotify.com/episode/3XWFhAkJc4hPoYOsiFEr3C?si=GAa3g4epTYGXJz5OSOtmGA&utm_source=copy-link&sci=spotify%3Acard-config%3A1Lco8nfmQSqXgHm2YmYfx'
+    spotifyUrl: 'https://open.spotify.com/episode/3XWFhAkJc4hPoYOsiFEr3C?si=GAa3g4epTYGXJz5OSOtmGA&utm_source=copy-link&sci=spotify%3Acard-config%3A1Lco8nfmQSqXgHm2YmYfx',
+    image: "assets/images/karpov.jpg"
   },
   choices:[
   {id:'hold-demands',
@@ -57,7 +59,8 @@ export const careerEvents = [
   realStory: {
     title: 'Fischer juega en Yugoslavia pese a las sanciones (1992).',
     description: 'Fischer disputó una revancha contra Spassky en Yugoslavia pese a una orden del gobierno estadounidense que advertía que violaría las sanciones internacionales. Fischer escupió públicamente sobre la orden y después quedó expuesto a una acusación penal en Estados Unidos.',
-    spotifyUrl: 'https://open.spotify.com/episode/48lSW6VSEhTh1zHy1Uebrg?si=ZfUPIv9_SLyi-9N95JlcwQ&utm_source=copy-link&sci=spotify%3Acard-config%3A7HZ6Cv9YqdJxBuHNjrM4CF'
+    spotifyUrl: 'https://open.spotify.com/episode/48lSW6VSEhTh1zHy1Uebrg?si=ZfUPIv9_SLyi-9N95JlcwQ&utm_source=copy-link&sci=spotify%3Acard-config%3A7HZ6Cv9YqdJxBuHNjrM4CF',
+    image: "assets/images/yugoslavia.jpg"
   },
   choices:[
   {id:'play-anyway',
@@ -75,7 +78,8 @@ export const careerEvents = [
   realStory: {
     title: 'Fischer–Spassky: el “Match del Siglo” (1972).',
     description: 'Fischer discutió premios, cámaras, iluminación, público y condiciones de juego; no se presentó a la segunda partida y la perdió por incomparecencia. El encuentro llegó a estar cerca de cancelarse y adquirió una enorme dimensión política por la Guerra Fría.',
-    spotifyUrl: 'https://open.spotify.com/episode/48lSW6VSEhTh1zHy1Uebrg?si=ZfUPIv9_SLyi-9N95JlcwQ&utm_source=copy-link&sci=spotify%3Acard-config%3A7HZ6Cv9YqdJxBuHNjrM4CF'
+    spotifyUrl: 'https://open.spotify.com/episode/48lSW6VSEhTh1zHy1Uebrg?si=ZfUPIv9_SLyi-9N95JlcwQ&utm_source=copy-link&sci=spotify%3Acard-config%3A7HZ6Cv9YqdJxBuHNjrM4CF',
+    image: "assets/images/spasskyfischer.jpg"
   },
   choices:[
   {id:'quiet-room',
@@ -92,7 +96,8 @@ export const careerEvents = [
   realStory: {
     title: 'Las acusaciones de colusión en Curazao (1962)',
     description: 'Bobby Fischer acusó a Petrosian, Keres y Geller de pactar tablas rápidas entre ellos para ahorrar energía y bloquear a los rivales no soviéticos. La controversia llevó a sustituir el gran torneo de Candidatos por encuentros eliminatorios ',
-    spotifyUrl: 'https://open.spotify.com/episode/48lSW6VSEhTh1zHy1Uebrg?si=ZfUPIv9_SLyi-9N95JlcwQ&utm_source=copy-link&sci=spotify%3Acard-config%3A7HZ6Cv9YqdJxBuHNjrM4CF'
+    spotifyUrl: 'https://open.spotify.com/episode/48lSW6VSEhTh1zHy1Uebrg?si=ZfUPIv9_SLyi-9N95JlcwQ&utm_source=copy-link&sci=spotify%3Acard-config%3A7HZ6Cv9YqdJxBuHNjrM4CF',
+    image: "assets/images/curacao.jpg"
   },
   choices:[
   {id:'speak',
@@ -110,7 +115,8 @@ export const careerEvents = [
   realStory: {
     title: 'Alekhine evita la revancha con Capablanca (1927–1946).',
     description: 'Después de quitarle el título mundial, Alexander Alekhine nunca concedió a José Raúl Capablanca la esperada revancha. Las exigencias económicas y la enemistad entre ambos alimentaron durante décadas la discusión sobre si el campeón lo estaba esquivando.',
-    spotifyUrl: 'https://open.spotify.com/episode/4dA3ZJAiQO0VT5C7ObsLq4?si=ac46f306206b4844'
+    spotifyUrl: 'https://open.spotify.com/episode/4dA3ZJAiQO0VT5C7ObsLq4?si=ac46f306206b4844',
+    image: "assets/images/alekhine.jpg"
   },
   choices:[
   {id:'grant-rematch',
@@ -127,7 +133,8 @@ export const careerEvents = [
   realStory: {
     title: 'Carlsen–Niemann (2022).',
     description: 'Tras perder con Hans Niemann en la Sinquefield Cup, Magnus Carlsen abandonó el torneo y posteriormente renunció después de una sola jugada en una partida en línea contra él. Niemann reconoció trampas anteriores en partidas en línea, pero negó haber hecho trampa presencialmente; no se probó fraude en la partida de San Luis. FIDE amonestó a Carlsen por retirarse sin seguir el procedimiento formal.',
-    spotifyUrl: 'https://open.spotify.com/episode/5aBKxkM4jva4xdXTmhQOmL?si=b4035782b72649b5'
+    spotifyUrl: 'https://open.spotify.com/episode/5aBKxkM4jva4xdXTmhQOmL?si=b4035782b72649b5',
+    image: "assets/images/niemann.jpg"
   },
   choices:[
   {id:'request-check',
@@ -144,7 +151,8 @@ export const careerEvents = [
   realStory: {
     title: 'Varios casos de trampas en el ajedrez',
     description: 'En todos los niveles, aún en los más altos, se han encontrado tramposos. Yogures codificados, lentes especiales, zapatos con señales y toda clase de artilugios dignos del Superagente 86. Escuchá la columna completa y enterate de muchas polémicas.',
-    spotifyUrl: 'https://open.spotify.com/episode/5aBKxkM4jva4xdXTmhQOmL?si=b4035782b72649b5'
+    spotifyUrl: 'https://open.spotify.com/episode/5aBKxkM4jva4xdXTmhQOmL?si=b4035782b72649b5',
+    image: "assets/images/niemann.jpg"
   },
   choices:[
   {id:'accept-cheating',
@@ -161,7 +169,8 @@ export const careerEvents = [
   realStory: {
     title: 'Kasparov cambia una jugada contra Judit Polgár (Linares, 1994).',
     description: 'Kasparov puso un caballo en una casilla, aparentemente soltándolo, y después lo llevó a otra. Polgár no reclamó inmediatamente y el árbitro no intervino; una grabación reavivó la discusión sobre si se había infringido la regla de pieza tocada y jugada realizada',
-    spotifyUrl: 'https://open.spotify.com/episode/5boL5kCHF853K9IzLPYUt5?si=d3f87201603443cb'
+    spotifyUrl: 'https://open.spotify.com/episode/5boL5kCHF853K9IzLPYUt5?si=d3f87201603443cb',
+    image: "assets/images/polgarkasparov.jpg"
   },
   choices:[
   {id:'reclamo',
@@ -178,7 +187,8 @@ export const careerEvents = [
   realStory: {
     title: 'Miguel Najdorf rompe el record de mayor cantidad de simultáneas a ciegas (1947)',
     description: 'En San Pablo, Miguel Najdorf disputó simultáneamente 45 partidas de ajedrez sin ver ninguno de los tableros. Después de casi un día de juego ganó 39, empató 4 y perdió apenas 2, estableciendo un récord mundial de simultáneas a ciegas. La exhibición tuvo además un motivo personal: Najdorf esperaba que la repercusión internacional pudiera ayudarlo a reencontrarse con su familia, de la que había quedado separado por la Segunda Guerra Mundial.',
-    spotifyUrl: 'https://open.spotify.com/episode/5XIUyIjgJvuSE4AoH2BIbD?si=9a7d45dcd5674c13'
+    spotifyUrl: 'https://open.spotify.com/episode/5XIUyIjgJvuSE4AoH2BIbD?si=9a7d45dcd5674c13',
+    image: "assets/images/najdorfciegas.jpg"
   },
   choices:[
   {id:'accept',
@@ -195,7 +205,8 @@ export const careerEvents = [
   realStory: {
     title: 'Najdorf corrige a Perón',
     description: 'En un Match contra la URSS en 1954, el ya argentino Miguel Najdorf juega contra David Bronstein. Perón juega 1.e4, pero Najdorf vuelve atrás y lo cambia por 1.d4 ante la mirada atónita del soviético que jamás podría hacer eso en su país.',
-    spotifyUrl: 'https://open.spotify.com/episode/5XIUyIjgJvuSE4AoH2BIbD?si=o6a1rYUsQ7eVNeC5o4gVVQ&utm_source=copy-link&sci=spotify%3Acard-config%3A4S1gYhDgqMgtISZbJuOtLg'
+    spotifyUrl: 'https://open.spotify.com/episode/5XIUyIjgJvuSE4AoH2BIbD?si=o6a1rYUsQ7eVNeC5o4gVVQ&utm_source=copy-link&sci=spotify%3Acard-config%3A4S1gYhDgqMgtISZbJuOtLg',
+    image: "assets/images/peronnajdorf.jpg"
   },
   choices:[
   {id:'change',
@@ -212,7 +223,8 @@ export const careerEvents = [
   realStory: {
     title: 'La suspensión de Karpov–Kasparov (1984–1985).',
     description: 'Después de 48 partidas y más de cinco meses, el presidente de FIDE Florencio Campomanes canceló el match cuando Karpov ganaba 5–3, pero Kasparov acababa de vencer dos partidas. Kasparov sostuvo que la decisión favoreció a Karpov; Campomanes alegó la salud de ambos.',
-    spotifyUrl: 'https://open.spotify.com/episode/5xKh8b9NJOvcyGT4Jbx7cy?si=5286d8d1458e423f'
+    spotifyUrl: 'https://open.spotify.com/episode/5xKh8b9NJOvcyGT4Jbx7cy?si=5286d8d1458e423f',
+    image: "assets/images/karpovkasparov.jpg"
   },
   choices:[
   {id:'oppose-suspension',
@@ -229,7 +241,8 @@ export const careerEvents = [
   realStory: {
     title: 'Candela Francisco campeona mundial Sub-20 (2023)',
     description: 'Con 17 años, la argentina Candela Francisco llegó a la última ronda del Mundial Juvenil obligada a ganar. En una partida muy agresiva contra la búlgara Beloslava Krasteva, primero sacrificó un peón y, en pleno apuro de tiempo, realizó un espectacular sacrificio de dama en la jugada 39. Había calculado la continuación: su rival aceptó el sacrificio con el caballo y Candela lanzó un ataque decisivo que terminó dándole la victoria en 53 movimientos. Ese triunfo fue clave para consagrarse campeona mundial Sub-20 e invicta.',
-    spotifyUrl: 'https://open.spotify.com/episode/6o1LILWOV138AZPCF4mM22?si=d1c3ba34eb81473a'
+    spotifyUrl: 'https://open.spotify.com/episode/6o1LILWOV138AZPCF4mM22?si=d1c3ba34eb81473a',
+    image: "assets/images/candela.jpg"
   },
   choices:[
   {id:'podium',
@@ -247,7 +260,8 @@ export const careerEvents = [
   realStory: {
     title: 'Carlsen y Nepomniachtchi comparten el Mundial de blitz (2024).',
     description: 'Tras empatar 2–2 la final y encadenar tres tablas en la muerte súbita, Carlsen propuso compartir el título. Nepomniachtchi aceptó y FIDE autorizó una solución que no estaba prevista expresamente como desenlace normal del formato. Parte del ambiente ajedrecístico criticó que las reglas se modificaran durante la propia final.',
-    spotifyUrl: 'https://open.spotify.com/episode/5WClHJeut9qliRHCtImfSA?si=Kbsd1oWtQxaualpAil4Dug'
+    spotifyUrl: 'https://open.spotify.com/episode/5WClHJeut9qliRHCtImfSA?si=Kbsd1oWtQxaualpAil4Dug',
+    image: "assets/images/compartencampeonato.jpg"
   },
   choices:[
   {id:'offer-shared-title',
@@ -264,7 +278,8 @@ export const careerEvents = [
   realStory: {
     title: 'Carlsen, los jeans y su ruptura temporal con FIDE (2024).',
     description: 'En el Mundial de rápidas de Nueva York, Carlsen recibió una multa de USD 200 por vestir jeans. Aceptó pagarla y prometió cambiarse al día siguiente, pero se negó a hacerlo inmediatamente. Por ello no fue emparejado en la novena ronda y decidió retirarse del torneo; técnicamente no fue expulsado de todo el campeonato. Tras negociar su regreso para el Mundial de blitz, FIDE flexibilizó la interpretación del código y admitió “desviaciones menores elegantes”, incluidos jeans apropiados combinados con una chaqueta.',
-    spotifyUrl: 'https://open.spotify.com/episode/5WClHJeut9qliRHCtImfSA?si=Kbsd1oWtQxaualpAil4Dug'
+    spotifyUrl: 'https://open.spotify.com/episode/5WClHJeut9qliRHCtImfSA?si=Kbsd1oWtQxaualpAil4Dug',
+    image: "assets/images/jeansgate.jpg"
   },
   choices:[
   {id:'change-clothes',
@@ -281,7 +296,8 @@ export const careerEvents = [
   realStory: {
     title: 'La “danza de los caballos” de Dubov y Nepomniachtchi (2023).',
     description: 'Ambos grandes maestros hicieron deliberadamente una secuencia absurda de movimientos de caballo y acordaron tablas por repetición. El árbitro consideró que habían desacreditado la competición y cambió el resultado a 0–0: ninguno recibió el medio punto. La apelación fue rechazada.',
-    spotifyUrl: 'https://open.spotify.com/episode/5WClHJeut9qliRHCtImfSA?si=Kbsd1oWtQxaualpAil4Dug'
+    spotifyUrl: 'https://open.spotify.com/episode/5WClHJeut9qliRHCtImfSA?si=Kbsd1oWtQxaualpAil4Dug',
+    image: "assets/images/danzacaballos.jpg"
   },
   choices:[
   {id:'repetir',
@@ -298,7 +314,8 @@ export const careerEvents = [
   realStory: {
     title: 'La polémica clasificación de Ding Liren al Candidatos (2022).',
     description: 'Para alcanzar el mínimo de partidas exigido y entrar por rating, Ding jugó numerosos encuentros organizados apresuradamente en China. Aunque el procedimiento fue aceptado oficialmente, algunos rivales cuestionaron si respetaba el espíritu del sistema.',
-    spotifyUrl: 'https://open.spotify.com/episode/27pdBR4ZblyckN6X7Vxqat?si=FllkIYmATmmKikup7GoEkA&utm_source=copy-link&sci=spotify%3Acard-config%3A4BrWALnJnbcl8N7YKRpKzI'
+    spotifyUrl: 'https://open.spotify.com/episode/27pdBR4ZblyckN6X7Vxqat?si=FllkIYmATmmKikup7GoEkA&utm_source=copy-link&sci=spotify%3Acard-config%3A4BrWALnJnbcl8N7YKRpKzI',
+    image: "assets/images/dingliren.jpg"
   },
   choices:[
   {id:'jugar',
@@ -491,5 +508,104 @@ export const careerEvents = [
   {id:'protect-team',
    label:'Guardar los secretos',description:'Preferís un relato incompleto antes que traicionar al equipo.',chance:88,successElo:10,failureElo:-6,
    successTitle:'El pacto sobrevive',successText:'Tus compañeros reconocen el gesto y juntos escriben una versión que todos pueden sostener.',
-   failureTitle:'Un libro sin nervio',failureText:'La editorial considera que el manuscrito evita todo conflicto y cancela la publicación.'}]}
+   failureTitle:'Un libro sin nervio',failureText:'La editorial considera que el manuscrito evita todo conflicto y cancela la publicación.'}]},
+
+   {id:'nino-prodigio',minSeason:1,maxSeason:2,minLevel:1,maxLevel:2,
+  title:'Mirando desde afuera',text:'Tu padre está jugando al ajedrez con un amigo. Notás que hace una jugada perdedora y que ni tu padre ni su rival lo ven. Podés intervenir y corregirlo, o dejar que siga jugando.',
+  finalCandidate:false,
+  realStory: {
+    title: 'Capablanca, niño prodigio (1892)',
+    description: 'A Capablanca no lo dejaban jugar al ajedrez, pero siempre observaba a su padre. Con solo 4 años se entromete para corregir a un amigo de su padre, al poco tiempo les gana a todos.',
+    spotifyUrl: 'https://open.spotify.com/episode/0eGGLUDKiqIO0lHOw8N0xE?si=pHXvFxGXTsyq3tYGk0XhYg',
+    image: "assets/images/capablanca.jpg"
+  },
+  choices:[
+  {id:'juegue',
+   label:'Mostrar la jugada correcta',description:'Intervienes para corregir la jugada perdedora.',chance:70,successElo:10,failureElo:-10,
+   successTitle:'El juego cambia',successText:'Tu padre reconoce tu intervención y juntos desarrollan una estrategia más fuerte.',
+   failureTitle:'Un error en el tablero',failureText:'Lo que creíste ver como una jugada ganadora era en realidad una trampa y tu padre pierde la partida.'},
+  {id:'no-intervenga',
+   label:'No intervenir',description:'Dejas que el juego siga su curso sin intervenir.',chance:50,successElo:10,failureElo:-6,
+   successTitle:'Tu padre gana la partida',successText:'Está tan contento con la victoria que ahora quiere enseñarte todo lo que sabe',
+   failureTitle:'Ni fu ni fa',failureText:'Ninguno de los dos entiende la jugada y la partida termina en empate. Guardan el tablero de ajedrez.'}]},
+
+   {id:'fischer-autodidacta',minSeason:2,maxSeason:3,minLevel:1,maxLevel:3,
+  title:'La oportunidad',text:'Tenés la oportunidad de mejorar fuertemente en el ajedrez, pero eso requiere sacrificar otras cosas...',
+
+  realStory: {
+    title: 'Fischer autodidacta (1959)',
+    description: 'A los 16 años de edad, cuando la ley se lo permitió Bobby Fischer dejó sus estudios para dedicarse de lleno al ajedrez (no lo hagan en sus casas)',
+    spotifyUrl: 'https://open.spotify.com/episode/48lSW6VSEhTh1zHy1Uebrg?si=ry1ZbfFATc28FsrgUKEyQw',
+    image: "assets/images/fischerautodidacta.jpg"
+  },
+
+  choices:[
+  {id:'dejar',
+   label:'Dejar la escuela',description:'Y te dedicas de lleno a estudiar ajedrez.',chance:28,successElo:25,failureElo:-15,
+   successTitle:'Vivir del ajedrez',successText:'Tu dedicación te permite mejorar rápidamente y convertirte en un jugador profesional.',
+   failureTitle:'La oportunidad perdida',failureText:'El sacrificio es demasiado grande y tu nivel de juego no mejora lo suficiente para competir profesionalmente.'},
+  {id:'estudiar',
+   label:'Seguir estudiando',description:'Y continúas estudiando ajedrez mientras mantienes tu educación.',chance:88,successElo:10,failureElo:-6,
+   successTitle:'El estudio da frutos',successText:'Tu educación te proporciona una base sólida y habilidades que te ayudan a mejorar en el ajedrez de manera más equilibrada.',
+   failureTitle:'Poco tiempo para los hobbies',failureText:'El tiempo que dedicas a la escuela limita tu práctica de ajedrez y tu progreso es más lento de lo esperado.'}]},
+
+   {id:'otro-nino-prodigio',minSeason:1,maxSeason:3,minLevel:1,maxLevel:3,
+  title:'El roce internacional',text:'Tenés la oportunidad de mudarte para entrenar con un grupo de jóvenes talentos de todo el mundo. Esto podría mejorar tu juego, pero también significa estar lejos de tu familia y amigos.',
+
+  realStory: {
+    title: 'Faustino Oro se muda a Barcelona (2023)',
+    description: 'A la edad de 10 años, Faustino Oro y su familia decidieron mudarse a Barcelona para fomentar su carrera ajedrecística (aunque sigue representando a la Argentina)',
+    spotifyUrl: 'https://open.spotify.com/episode/2JgKdCTJoH7Ha0Osow4cLo?si=sJcocH4FRNqox4MTo0qwYQ&utm_source=copy-link&sci=spotify%3Acard-config%3A3p4tBZVjCCUUcmhu6vpqJT',
+    image: "assets/images/faustino.jpg"
+  },
+
+  choices:[
+  {id:'mudarte',
+   label:'Mudarte',description:'Te mudas para entrenar con jóvenes talentos de todo el mundo.',chance:58,successElo:15,failureElo:-15,
+   successTitle:'El roce internacional',successText:'Tu experiencia en el extranjero te permite mejorar rápidamente y conocer nuevas estrategias.',
+   failureTitle:'La soledad del viaje',failureText:'La distancia te aleja de tu familia y amigos, lo que afecta tu motivación y progreso.'},
+  {id:'quedarte',
+   label:'Quedarte',description:'Preferís mantener tu vida en casa y no arriesgar todo por una oportunidad.',chance:58,successElo:10,failureElo:-6,
+   successTitle:'La estabilidad de casa',successText:'Te mantienes en un entorno conocido y puedes concentrarte en tu desarrollo sin distracciones.',
+   failureTitle:'El camino no tomado',failureText:'La oportunidad se pierde y sentís que podrías haber logrado más con un esfuerzo adicional.'}]},
+
+   {id:'banderas',minSeason:3,maxSeason:9,minLevel:1,maxLevel:10,
+  title:'Cambio de banderas',text:'Te ofrecen jugar para otra Federación con más recursos pero tenés que dejar de representar a tu país.',
+
+  realStory: {
+    title: 'Alan Pichot cambia de bandera y representa a España (2023)',
+    description: 'En agosto de 2023, Alan Pichot, numero 1 del ranking argentino anunció que se cambiaría de bandera y comenzaría a representar a España.',
+    spotifyUrl: 'https://open.spotify.com/episode/48lSW6VSEhTh1zHy1Uebrg?si=ry1ZbfFATc28FsrgUKEyQw&utm_source=copy-link&sci=spotify%3Acard-config%3A7XUJ4AfIUz3buuJGBXF7HJ',
+    image: "assets/images/pichot.jpg"
+  },
+
+  choices:[
+  {id:'patria',
+   label:'Seguir representando a tu país',description:'Con sus falencias y aciertos, pero se lleva en el corazón.',chance:28,successElo:25,failureElo:-15,
+   successTitle:'El orgullo de representar a tu país',successText:'Tu dedicación y amor por tu país te permite mejorar rápidamente y convertirte en un jugador profesional.',
+   failureTitle:'El sacrificio',failureText:'El sacrificio es demasiado grande y tu nivel de juego no mejora lo suficiente para competir profesionalmente.'},
+  {id:'muerte',
+   label:'Cambiar de bandera',description:'La necesidad manda, el corazón obedece.',chance:88,successElo:10,failureElo:-6,
+   successTitle:'Te reciben con los brazos abiertos',successText:'La Federación te da recursos y oportunidades que te permiten mejorar rápidamente y conocer nuevas estrategias.',
+   failureTitle:'Lejos del dolor y de la fiesta',failureText:'Los medios cuestionan tu falta de compromiso, porque no sentís la bandera como propia.'}]},
+
+   {id:'experimento',minSeason:1,maxSeason:4,minLevel:1,maxLevel:4,
+  title:'El controvertido experimento',text:'Tu familia te utiliza como peón en un caso de estudio.',
+
+  realStory: {
+    title: 'El experimento de las Polgar (2023)',
+    description: 'Las hermanas Polgar fueron parte de une experimento educativo llevado adelante por su padre, Laszlo durante la década del 80 para demostrar que cualquier niño o niña puede llegar a ser el/la mejor del mundo si recibe el entrenamiento adecuado.',
+    spotifyUrl: 'https://open.spotify.com/episode/5boL5kCHF853K9IzLPYUt5?si=SwW2GxuAQ0WiQpLMzXJVZQ&utm_source=copy-link&sci=spotify%3Acard-config%3A4CDxeW9nOsyzcH4z9wRs4w',
+    image: "assets/images/polgar.jpg"
+  },
+
+  choices:[
+  {id:'experimental',
+   label:'El ajedrez es mi vida',description:'Aceptás dejar la escuela y dedicarte al experimento del ajedrez desde jovencita',chance:38,successElo:15,failureElo:-15,
+   successTitle:'Nace una superestrella',successText:'Algo de razón tenía tu familia: tu nivel de juego mejora rápidamente y te convertís en una jugadora profesional.',
+   failureTitle:'Demasiada presión',failureText:'Tu juego se resiente por la presión de tus padres y tu nivel de juego no mejora lo suficiente.'},
+  {id:'tradicional',
+   label:'La vida tradicional',description:'Preferís seguir el camino convencional y continuar con tu educación.',chance:68,successElo:10,failureElo:-6,
+   successTitle:'El camino tradicional',successText:'Tu educación te proporciona una base sólida y habilidades que te ayudan a mejorar en el ajedrez de manera más equilibrada.',
+   failureTitle:'La falta de compromiso',failureText:'Tu juego se resiente por la falta de tiempo para entrenar y tu nivel de juego no mejora lo suficiente.'}]},
 ];

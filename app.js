@@ -88,12 +88,26 @@ function safeSpotifyUrl(value){
 function normalizeRealStory(value){
   if(!value || typeof value !== 'object') return null;
 
-  const title = String(value.title ?? value.subtitle ?? value.name ?? '').trim();
-  const description = String(value.description ?? value.text ?? '').trim();
-  const spotifyUrl = safeSpotifyUrl(value.spotifyUrl ?? value.spotify ?? '');
+  const title =
+    String(value.title ?? value.subtitle ?? value.name ?? '').trim();
 
-  if(!title && !description && !spotifyUrl) return null;
-  return {title,description,spotifyUrl};
+  const description =
+    String(value.description ?? value.text ?? '').trim();
+
+  const spotifyUrl =
+    safeSpotifyUrl(value.spotifyUrl ?? value.spotify ?? '');
+
+  const image =
+    String(value.image ?? '').trim();
+
+  if(!title && !description && !spotifyUrl && !image) return null;
+
+  return {
+    title,
+    description,
+    spotifyUrl,
+    image
+  };
 }
 
 function hideRealStory(){
@@ -115,37 +129,60 @@ function renderRealStory(value){
 
   const box = $('realStory');
   const list = $('realStoryList');
+
   if(!box || !list) return;
 
   const kicker = box.querySelector('.achievement-kicker');
-  if(kicker) kicker.textContent = 'ESTO PASÓ REALMENTE';
+
+  if(kicker){
+    kicker.textContent = 'ESTO PASÓ REALMENTE';
+  }
 
   list.innerHTML = '';
+
   const card = document.createElement('article');
+  card.className = 'real-story-card';
+
+  if(story.image){
+    const image = document.createElement('img');
+    image.className = 'real-story-image';
+    image.src = story.image;
+    image.alt = story.title || 'Imagen relacionada con la historia real';
+    image.loading = 'lazy';
+
+    card.appendChild(image);
+  }
+
+  const copy = document.createElement('div');
+  copy.className = 'real-story-copy';
 
   if(story.title){
     const title = document.createElement('strong');
     title.textContent = story.title;
-    card.appendChild(title);
+    copy.appendChild(title);
   }
 
   if(story.description){
     const description = document.createElement('span');
     description.textContent = story.description;
-    card.appendChild(description);
+    copy.appendChild(description);
   }
 
   if(story.spotifyUrl){
     const link = document.createElement('a');
+
     link.className = 'spotify-link';
     link.href = story.spotifyUrl;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
     link.textContent = 'Escuchar en Spotify ↗';
-    card.appendChild(link);
+
+    copy.appendChild(link);
   }
 
+  card.appendChild(copy);
   list.appendChild(card);
+
   box.hidden = false;
 }
 

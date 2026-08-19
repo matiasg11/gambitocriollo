@@ -398,22 +398,57 @@ function chooseEvent(session: Session) {
 function publicRealStory(value: any) {
   if (!value || typeof value !== 'object') return null;
 
-  const title = typeof value.title === 'string' ? value.title.trim() : '';
-  const description = typeof value.description === 'string' ? value.description.trim() : '';
+  const title =
+    typeof value.title === 'string'
+      ? value.title.trim()
+      : '';
+
+  const description =
+    typeof value.description === 'string'
+      ? value.description.trim()
+      : '';
+
+  const rawImage =
+    typeof value.image === 'string'
+      ? value.image.trim()
+      : '';
+
+  // Solo permitimos imágenes de la carpeta del juego.
+  const image =
+    /^assets\/real-stories\/[A-Za-z0-9._/-]+$/.test(rawImage)
+      ? rawImage
+      : '';
 
   let spotifyUrl = '';
+
   try {
     const candidate = new URL(String(value.spotifyUrl || ''));
     const hostname = candidate.hostname.toLowerCase();
-    if (candidate.protocol === 'https:' && (hostname === 'open.spotify.com' || hostname === 'spotify.link')) {
+
+    if (
+      candidate.protocol === 'https:' &&
+      (
+        hostname === 'open.spotify.com' ||
+        hostname === 'spotify.link'
+      )
+    ) {
       spotifyUrl = candidate.href;
     }
-  } catch { /* El enlace es opcional. */ }
+  } catch {
+    /* El enlace es opcional. */
+  }
 
-  if (!title && !description && !spotifyUrl) return null;
-  return { title, description, spotifyUrl };
+  if (!title && !description && !spotifyUrl && !image) {
+    return null;
+  }
+
+  return {
+    title,
+    description,
+    image,
+    spotifyUrl
+  };
 }
-
 function publicEvent(event: any) {
   let spotifyUrl = '';
   try {
@@ -515,8 +550,19 @@ async function registerResult(admin: any, session: Session) {
   if (completion.error) throw completion.error;
 }
 
-async function publicStats(admin: any, visitorId: string) {
-  const { data, error } = await admin.rpc('gambito_public_stats', { p_visitor_id: visitorId });
+async function publicStats(
+  admin: any,
+  visitorId: string,
+  sessionId: string
+) {
+  const { data, error } = await admin.rpc(
+    'gambito_public_stats',
+    {
+      p_visitor_id: visitorId,
+      p_session_id: sessionId
+    }
+  );
+
   if (error) throw error;
   return data;
 }
@@ -780,7 +826,13 @@ const finalEvent =
           ...completed,
           updated: undefined,
           state: publicSession(completed.updated),
-          stats: completed.updated.completed_at ? await publicStats(admin, visitorId) : undefined,
+          stats: completed.updated.completed_at
+  ? await publicStats(
+      admin,
+      visitorId,
+      completed.updated.id
+    )
+  : undefined,
         });
       }
 
@@ -794,7 +846,13 @@ const finalEvent =
           ...completed,
           updated: undefined,
           state: publicSession(completed.updated),
-          stats: completed.updated.completed_at ? await publicStats(admin, visitorId) : undefined,
+          stats: completed.updated.completed_at
+  ? await publicStats(
+      admin,
+      visitorId,
+      completed.updated.id
+    )
+  : undefined,
         });
       }
 
@@ -827,7 +885,15 @@ const finalEvent =
     }
 
     if (action === 'stats') {
-      return response(request, { ok: true, stats: await publicStats(admin, visitorId), state: publicSession(session) });
+      return response(request, {
+  ok: true,
+  stats: await publicStats(
+    admin,
+    visitorId,
+    session.id
+  ),
+  state: publicSession(session)
+});
     }
 
     throw new ApiError(400, 'Acción desconocida.');
