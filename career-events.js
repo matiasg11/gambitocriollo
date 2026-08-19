@@ -5,7 +5,8 @@ export const careerEvents = [
   realStory: {
     title: 'Kasparov acusa a IBM después de perder con Deep Blue (1997).',
     description: 'Tras caer ante la computadora, Kasparov insinuó que IBM podía haber recibido ayuda humana durante el match y pidió revisar los registros de cálculo. IBM negó la acusación, rechazó una revancha inmediata y desmontó la máquina, lo que alimentó todavía más las sospechas, nunca demostradas.',
-    spotifyUrl: 'https://open.spotify.com/episode/1O5smllwNZhEZp4dGrEkBY?si=61324f73a55f4e4a'
+    spotifyUrl: 'https://open.spotify.com/episode/1O5smllwNZhEZp4dGrEkBY?si=61324f73a55f4e4a',
+    image: "assets/images/deepblue.png"
   },
   choices:[
   {id:'demand-logs',
@@ -116,7 +117,7 @@ export const careerEvents = [
     title: 'Alekhine evita la revancha con Capablanca (1927–1946).',
     description: 'Después de quitarle el título mundial, Alexander Alekhine nunca concedió a José Raúl Capablanca la esperada revancha. Las exigencias económicas y la enemistad entre ambos alimentaron durante décadas la discusión sobre si el campeón lo estaba esquivando.',
     spotifyUrl: 'https://open.spotify.com/episode/4dA3ZJAiQO0VT5C7ObsLq4?si=ac46f306206b4844',
-    image: "assets/images/alekhine.jpeg"
+    image: "assets/images/alekhine.png"
   },
   choices:[
   {id:'grant-rematch',
@@ -510,7 +511,7 @@ export const careerEvents = [
    successTitle:'El pacto sobrevive',successText:'Tus compañeros reconocen el gesto y juntos escriben una versión que todos pueden sostener.',
    failureTitle:'Un libro sin nervio',failureText:'La editorial considera que el manuscrito evita todo conflicto y cancela la publicación.'}]},
 
-   {id:'nino-prodigio',minSeason:1,maxSeason:2,minLevel:1,maxLevel:2,
+{id:'nino-prodigio',minSeason:1,maxSeason:2,minLevel:1,maxLevel:2,
   title:'Mirando desde afuera',text:'Tu padre está jugando al ajedrez con un amigo. Notás que hace una jugada perdedora y que ni tu padre ni su rival lo ven. Podés intervenir y corregirlo, o dejar que siga jugando.',
   finalCandidate:false,
   realStory: {
@@ -529,7 +530,7 @@ export const careerEvents = [
    successTitle:'Tu padre gana la partida',successText:'Está tan contento con la victoria que ahora quiere enseñarte todo lo que sabe',
    failureTitle:'Ni fu ni fa',failureText:'Ninguno de los dos entiende la jugada y la partida termina en empate. Guardan el tablero de ajedrez.'}]},
 
-   {id:'fischer-autodidacta',minSeason:2,maxSeason:3,minLevel:1,maxLevel:3,
+{id:'fischer-autodidacta',minSeason:2,maxSeason:3,minLevel:1,maxLevel:3,
   title:'La oportunidad',text:'Tenés la oportunidad de mejorar fuertemente en el ajedrez, pero eso requiere sacrificar otras cosas...',
 
   realStory: {
@@ -549,7 +550,7 @@ export const careerEvents = [
    successTitle:'El estudio da frutos',successText:'Tu educación te proporciona una base sólida y habilidades que te ayudan a mejorar en el ajedrez de manera más equilibrada.',
    failureTitle:'Poco tiempo para los hobbies',failureText:'El tiempo que dedicas a la escuela limita tu práctica de ajedrez y tu progreso es más lento de lo esperado.'}]},
 
-   {id:'otro-nino-prodigio',minSeason:1,maxSeason:3,minLevel:1,maxLevel:3,
+{id:'otro-nino-prodigio',minSeason:1,maxSeason:3,minLevel:1,maxLevel:3,
   title:'El roce internacional',text:'Tenés la oportunidad de mudarte para entrenar con un grupo de jóvenes talentos de todo el mundo. Esto podría mejorar tu juego, pero también significa estar lejos de tu familia y amigos.',
 
   realStory: {
@@ -569,7 +570,7 @@ export const careerEvents = [
    successTitle:'La estabilidad de casa',successText:'Te mantienes en un entorno conocido y puedes concentrarte en tu desarrollo sin distracciones.',
    failureTitle:'El camino no tomado',failureText:'La oportunidad se pierde y sentís que podrías haber logrado más con un esfuerzo adicional.'}]},
 
-   {id:'banderas',minSeason:3,maxSeason:9,minLevel:1,maxLevel:10,
+{id:'banderas',minSeason:3,maxSeason:9,minLevel:1,maxLevel:10,
   title:'Cambio de banderas',text:'Te ofrecen jugar para otra Federación con más recursos pero tenés que dejar de representar a tu país.',
 
   realStory: {
@@ -589,7 +590,7 @@ export const careerEvents = [
    successTitle:'Te reciben con los brazos abiertos',successText:'La Federación te da recursos y oportunidades que te permiten mejorar rápidamente y conocer nuevas estrategias.',
    failureTitle:'Lejos del dolor y de la fiesta',failureText:'Los medios cuestionan tu falta de compromiso, porque no sentís la bandera como propia.'}]},
 
-   {id:'experimento',minSeason:1,maxSeason:4,minLevel:1,maxLevel:4,
+{id:'experimento',minSeason:1,maxSeason:4,minLevel:1,maxLevel:4,
   title:'El controvertido experimento',text:'Tu familia te utiliza como peón en un caso de estudio.',
 
   realStory: {
