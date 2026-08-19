@@ -415,9 +415,9 @@ function publicRealStory(value: any) {
 
   // Solo permitimos imágenes de la carpeta del juego.
   const image =
-    /^assets\/real-stories\/[A-Za-z0-9._/-]+$/.test(rawImage)
-      ? rawImage
-      : '';
+  /^assets\/images\/[A-Za-z0-9._/-]+$/.test(rawImage)
+    ? rawImage
+    : '';
 
   let spotifyUrl = '';
 
