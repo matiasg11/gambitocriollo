@@ -473,23 +473,23 @@ export const careerEvents = [
    successTitle:'La convicción pesa',successText:'El rival evita su propia novedad y tu plan funciona.',
    failureTitle:'La advertencia era correcta',failureText:'Caés exactamente en la variante que tu segundo había detectado.'}]},
 
-{id:'streamer-invitation',minSeason:3,maxSeason:10,minLevel:1,maxLevel:10,
-  title:'La invitación del streamer',text:'Un creador famoso te invita a jugar partidas rápidas en vivo la noche anterior a una ronda importante.',
-  realStory: {
-    title: 'Firouza se queda toda la noche jugando bullet durante el Torneo de Candidatos (2022).',
-    description: 'Luego de un mal día, Firouza estuvo conectado en Chess hasta las 5:43 de la madrugada con el famoso jugador y streamer Naroditsky (hora de Madrid donde se disputaba el Torneo de Candidatos) y llegó a jugar sin dormir. Sí, perdió al día siguiente',
-    spotifyUrl: 'https://open.spotify.com/episode/27pdBR4ZblyckN6X7Vxqat?si=FllkIYmATmmKikup7GoEkA&utm_source=copy-link&sci=spotify%3Acard-config%3A4BrWALnJnbcl8N7YKRpKzI',
-    image: "assets/images/dingliren.jpeg"
-  },
-  choices:[
-  {id:'stream',
-   label:'Aceptar la transmisión',description:'Ganás exposición, pero sacrificás descanso.',chance:62,successElo:14,failureElo:-12,
-   successTitle:'La cámara te potencia',successText:'La transmisión suma seguidores y llegás relajado a la ronda.',
-   failureTitle:'Una partida de más',failureText:'Te acostás tarde y al día siguiente calculás con la cabeza pesada.'},
-  {id:'study',
-   label:'Apagar la cámara y estudiar',description:'Priorizás la ronda y el sueño.',chance:84,successElo:14,failureElo:-5,
-   successTitle:'Silencio productivo',successText:'Encontrás una idea clave en las partidas de tu rival.',
-   failureTitle:'La oportunidad mediática pasa',failureText:'La invitación no se repite y perdés una vidriera importante.'}]},
+// {id:'streamer-invitation',minSeason:3,maxSeason:10,minLevel:1,maxLevel:10,
+//   title:'La invitación del streamer',text:'Un creador famoso te invita a jugar partidas rápidas en vivo la noche anterior a una ronda importante.',
+//   realStory: {
+//     title: 'Firouza se queda toda la noche jugando bullet durante el Torneo de Candidatos (2022).',
+//     description: 'Luego de un mal día, Firouza estuvo conectado en Chess hasta las 5:43 de la madrugada con el famoso jugador y streamer Naroditsky (hora de Madrid donde se disputaba el Torneo de Candidatos) y llegó a jugar sin dormir. Sí, perdió al día siguiente',
+//     spotifyUrl: 'https://open.spotify.com/episode/27pdBR4ZblyckN6X7Vxqat?si=FllkIYmATmmKikup7GoEkA&utm_source=copy-link&sci=spotify%3Acard-config%3A4BrWALnJnbcl8N7YKRpKzI',
+//     image: "assets/images/dingliren.jpeg"
+//   },
+//   choices:[
+//   {id:'stream',
+//    label:'Aceptar la transmisión',description:'Ganás exposición, pero sacrificás descanso.',chance:62,successElo:14,failureElo:-12,
+//    successTitle:'La cámara te potencia',successText:'La transmisión suma seguidores y llegás relajado a la ronda.',
+//    failureTitle:'Una partida de más',failureText:'Te acostás tarde y al día siguiente calculás con la cabeza pesada.'},
+//   {id:'study',
+//    label:'Apagar la cámara y estudiar',description:'Priorizás la ronda y el sueño.',chance:84,successElo:14,failureElo:-5,
+//    successTitle:'Silencio productivo',successText:'Encontrás una idea clave en las partidas de tu rival.',
+//    failureTitle:'La oportunidad mediática pasa',failureText:'La invitación no se repite y perdés una vidriera importante.'}]},
 
 {id:'final-teach-or-play',minSeason:9,maxSeason:10,minLevel:1,maxLevel:10,
   title:'La mesa que queda libre',text:'El club que te formó quiere que dirijas su escuela. Al mismo tiempo llega una invitación para seguir una temporada más en el circuito profesional.',
