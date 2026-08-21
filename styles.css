@@ -149,6 +149,64 @@ header{height:76px;padding:0 clamp(20px,5vw,60px);display:flex;align-items:cente
 .real-story-card:not(:has(.real-story-image)){
   grid-template-columns:1fr;
 }
+.game-splash{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+
+  display:grid;
+  place-items:center;
+
+  background:var(--paper);
+
+  opacity:1;
+  transition:
+    opacity .45s ease,
+    transform .45s ease;
+}
+
+.game-splash img{
+  display:block;
+
+  width:min(72vw,600px);
+  max-height:72vh;
+
+  object-fit:contain;
+
+  animation:splash-arrival .55s ease-out both;
+}
+
+.game-splash.leaving{
+  opacity:0;
+  transform:scale(.92);
+}
+
+@keyframes splash-arrival{
+  from{
+    opacity:0;
+    transform:scale(.8);
+  }
+
+  to{
+    opacity:1;
+    transform:scale(1);
+  }
+}
+
+.intro-thumb{
+  display:block;
+
+  width:100%;
+  max-width:120px;
+  max-height:120px;
+
+  margin:0 0 28px;
+
+  object-fit:contain;
+
+  background:var(--cream);
+  border:2px solid var(--cream);
+}
 @media(max-width:760px){
   header{height:64px}.welcome{grid-template-columns:1fr}.welcome aside{min-height:320px}.welcome aside:before{width:250px;height:250px}.welcome aside span{font-size:190px;top:105px}.welcome aside i{font-size:140px;top:195px}.welcome form div{display:grid;gap:8px}
   .game{grid-template-columns:1fr}.profile{padding:20px}.profile dl{display:grid;grid-template-columns:repeat(3,1fr);margin:15px 0}.profile dl div{display:block;border:0;padding:4px}.stage{padding:38px 20px;align-items:start}.puzzle-grid{grid-template-columns:1fr}.board-wrap{margin:auto}.choices{grid-template-columns:1fr}.career-card{padding:20px}.career-card-hero{grid-template-columns:1fr}.final-title-badge{width:100%}.career-card-stats{grid-template-columns:1fr}.career-card-stats article+article{border-left:0;border-top:2px solid var(--ink)}.final-achievements{grid-template-columns:1fr}.final-achievements article:nth-child(odd){border-right:0}.global-summary{grid-template-columns:1fr 1fr}.global-summary .placement{grid-column:1/-1}.leaderboard-head{display:block}.leaderboard-head small{display:block;margin-top:5px}.ending-actions{align-items:stretch}.ending-actions button,.ending-actions a{width:100%;text-align:center}.cfm-link{padding:12px}
