@@ -376,17 +376,17 @@ export const careerEvents = [
    successTitle:'Medio punto que pesa',successText:'El empate contra un gran maestro abre conversaciones en todo el circuito.',
    failureTitle:'La duda queda picando',failureText:'Después descubrís que tenías una victoria forzada y la noticia también circula.'}]},
 
-{id:'sponsor-contract',minSeason:5,maxSeason:9,minLevel:1,maxLevel:10,
-  title:'El contrato del patrocinador',text:'Una marca ofrece pagar todos tus viajes, pero exige que abandones la camiseta del club que te formó.',
-  choices:[
-  {id:'sign',
-   label:'Firmar el contrato',description:'La carrera necesita recursos.',chance:76,successElo:15,failureElo:-14,
-   successTitle:'El circuito se abre',successText:'Viajás a tres torneos fuertes y el roce internacional mejora tu juego.',
-   failureTitle:'Un precio demasiado alto',failureText:'El contrato trae obligaciones absurdas y el club siente que le diste la espalda.'},
-  {id:'decline',
-   label:'Seguir con el club',description:'Buscás otra forma de financiarte.',chance:58,successElo:15,failureElo:-10,
-   successTitle:'El barrio responde',successText:'Una colecta del club financia el viaje y jugás con todos alentando detrás.',
-   failureTitle:'La cuenta no cierra',failureText:'No reunís lo necesario y perdés una fecha clave del circuito.'}]},
+// {id:'sponsor-contract',minSeason:5,maxSeason:9,minLevel:1,maxLevel:10,
+//   title:'El contrato del patrocinador',text:'Una marca ofrece pagar todos tus viajes, pero exige que abandones la camiseta del club que te formó.',
+//   choices:[
+//   {id:'sign',
+//    label:'Firmar el contrato',description:'La carrera necesita recursos.',chance:76,successElo:15,failureElo:-14,
+//    successTitle:'El circuito se abre',successText:'Viajás a tres torneos fuertes y el roce internacional mejora tu juego.',
+//    failureTitle:'Un precio demasiado alto',failureText:'El contrato trae obligaciones absurdas y el club siente que le diste la espalda.'},
+//   {id:'decline',
+//    label:'Seguir con el club',description:'Buscás otra forma de financiarte.',chance:58,successElo:15,failureElo:-10,
+//    successTitle:'El barrio responde',successText:'Una colecta del club financia el viaje y jugás con todos alentando detrás.',
+//    failureTitle:'La cuenta no cierra',failureText:'No reunís lo necesario y perdés una fecha clave del circuito.'}]},
 
 {id:'shared-preparation',minSeason:3,maxSeason:9,minLevel:1,maxLevel:10,
   title:'Preparación compartida',text:'Tu compañero de selección te pide el análisis secreto que preparaste. Podrían cruzarse en la última ronda.',
@@ -475,6 +475,12 @@ export const careerEvents = [
 
 {id:'streamer-invitation',minSeason:3,maxSeason:10,minLevel:1,maxLevel:10,
   title:'La invitación del streamer',text:'Un creador famoso te invita a jugar partidas rápidas en vivo la noche anterior a una ronda importante.',
+  realStory: {
+    title: 'Firouza se queda toda la noche jugando bullet durante el Torneo de Candidatos (2022).',
+    description: 'Luego de un mal día, Firouza estuvo conectado en Chess hasta las 5:43 de la madrugada con el famoso jugador y streamer Naroditsky (hora de Madrid donde se disputaba el Torneo de Candidatos) y llegó a jugar sin dormir. Sí, perdió al día siguiente',
+    spotifyUrl: 'https://open.spotify.com/episode/27pdBR4ZblyckN6X7Vxqat?si=FllkIYmATmmKikup7GoEkA&utm_source=copy-link&sci=spotify%3Acard-config%3A4BrWALnJnbcl8N7YKRpKzI',
+    image: "assets/images/dingliren.jpeg"
+  },
   choices:[
   {id:'stream',
    label:'Aceptar la transmisión',description:'Ganás exposición, pero sacrificás descanso.',chance:62,successElo:14,failureElo:-12,
