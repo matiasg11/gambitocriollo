@@ -226,10 +226,36 @@ function stats(){
   $('rank').textContent = state.chessTitle === 'GM' ? 'Gran Maestro' : state.chessTitle === 'IM' ? 'Maestro Internacional' : state.chessTitle === 'FM' ? 'Maestro FIDE' : state.level >= 10 ? 'Campeón del mundo' : state.level === 9 ? 'Retador mundial' : state.level === 8 ? 'Candidato' : state.level >= 5 ? 'Figura nacional' : state.level >= 3 ? 'Talento regional' : 'Promesa del club';
 }
 
+async function showGameSplash(){
+  const splash = $('gameSplash');
+  const thumb = $('introThumb');
+
+  if(!splash || !thumb) return;
+
+  splash.hidden = false;
+
+  // La imagen queda grande durante 3 segundos.
+  await new Promise(resolve => setTimeout(resolve, 2000));
+
+  splash.classList.add('leaving');
+
+  await new Promise(resolve => setTimeout(resolve, 450));
+
+  splash.hidden = true;
+  splash.classList.remove('leaving');
+
+  // Luego queda visible en pequeño durante el juego.
+  thumb.hidden = false;
+}
+
 async function enterGame(){
   $('welcome').hidden = true;
   $('game').hidden = false;
+
   stats();
+
+  await showGameSplash();
+
   await route();
 }
 
