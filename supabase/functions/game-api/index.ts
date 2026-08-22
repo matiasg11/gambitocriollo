@@ -473,11 +473,10 @@ function publicEvent(event: any) {
     id: event.id,
     title: event.title,
     text: event.text,
-     image,
+    image,
     realStory: publicRealStory(event.realStory),
     longText: typeof event.longText === 'string' ? event.longText : '',
     spotifyUrl,
-   
     spotifyLabel: spotifyUrl && typeof event.spotifyLabel === 'string' ? event.spotifyLabel : '',
     choices: event.choices.map((choice: any) => ({
       id: choice.id,

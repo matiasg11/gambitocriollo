@@ -330,6 +330,7 @@ export const careerEvents = [
 
 {id:'birthday-debut',minSeason:1,maxSeason:1,minLevel:1,maxLevel:2,
   title:'El cumpleaños y el debut',text:'El club organiza un torneo importante justo la noche del cumpleaños de tu hermana. Tu familia ya reservó la mesa.',
+  image:'assets/images/birthday-debut.jpeg',
   choices:[
   {id:'play',
    label:'Jugar tu primer torneo',description:'Pedís perdón y corrés al club.',chance:65,successElo:15,failureElo:-15,
@@ -342,6 +343,7 @@ export const careerEvents = [
 
 {id:'first-open-road',minSeason:2,maxSeason:3,minLevel:1,maxLevel:10,
   title:'La ruta al primer abierto',text:'El torneo empieza temprano y queda a 600 kilómetros. El presupuesto alcanza para una sola comodidad.',
+  image:'assets/images/first-open-road.jpeg',
   choices:[
   {id:'bus',
    label:'Viajar de noche en micro',description:'Ahorrás plata, pero llegás directo a la ronda.',chance:55,successElo:15,failureElo:-15,
@@ -354,6 +356,7 @@ export const careerEvents = [
 
 {id:'exposed-repertoire',minSeason:2,maxSeason:7,minLevel:1,maxLevel:10,
   title:'Tu repertorio quedó expuesto',text:'Un rival publicó un video con todas tus partidas. Mañana se enfrentan y seguramente conoce tu apertura favorita y todas sus variantes.',
+  image:'assets/images/exposed-repertoire.jpeg',
   choices:[
   {id:'switch',
    label:'Cambiar de apertura',description:'Lo sorprendés, pero salís de terreno conocido.',chance:48,successElo:15,failureElo:-15,
@@ -366,6 +369,7 @@ export const careerEvents = [
 
 {id:'master-draw-offer',minSeason:3,maxSeason:10,minLevel:3,maxLevel:7,
   title:'La oferta del maestro',text:'Un gran maestro te ofrece tablas. La posición parece favorable, pero quedan dos minutos en el reloj.',
+  image:'assets/images/master-draw-offer.jpeg',
   choices:[
   {id:'reject',
    label:'Seguir jugando',description:'Buscás la victoria bajo presión.',chance:52,successElo:15,failureElo:-15,
@@ -390,6 +394,7 @@ export const careerEvents = [
 
 {id:'shared-preparation',minSeason:3,maxSeason:9,minLevel:1,maxLevel:10,
   title:'Preparación compartida',text:'Tu compañero de selección te pide el análisis secreto que preparaste. Podrían cruzarse en la última ronda.',
+  image:'assets/images/shared-preparation.jpeg',
   choices:[
   {id:'share',
    label:'Compartir el análisis',description:'El equipo está primero.',chance:68,successElo:15,failureElo:-15,
@@ -402,6 +407,7 @@ export const careerEvents = [
 
 {id:'fever-before-qualifier',minSeason:3,maxSeason:9,minLevel:1,maxLevel:10,
   title:'Fiebre antes de la selección',text:'Te levantás con fiebre el día del clasificatorio. El médico recomienda descanso, pero no habrá otra oportunidad este año.',
+  image:'assets/images/fever-before-qualifier.jpeg',
   finalCandidate:true,
   choices:[
   {id:'rest',
@@ -415,6 +421,7 @@ export const careerEvents = [
 
 {id:'dubious-gambit',minSeason:2,maxSeason:10,minLevel:1,maxLevel:10,
   title:'El gambito dudoso',text:'Tu entrenador propone estrenar un gambito agresivo que el motor desaprueba, pero que puede sorprender al favorito.',
+  image:'assets/images/dubious-gambit.jpeg',
   choices:[
   {id:'play-gambit',
    label:'Jugar el gambito',description:'Apostás por iniciativa y sorpresa.',chance:42,successElo:15,failureElo:-15,
@@ -427,6 +434,7 @@ export const careerEvents = [
 
 {id:'trainer-change',minSeason:2,maxSeason:9,minLevel:1,maxLevel:9,
   title:'Cambiar de entrenador',text:'Una entrenadora internacional te ofrece trabajar con vos, pero exige abandonar el método del profesor que te formó.',
+  image:'assets/images/trainer-change.jpeg',
   choices:[
   {id:'new-coach',
    label:'Aceptar el cambio',description:'Buscás una mirada nueva aunque duela la despedida.',chance:68,successElo:15,failureElo:-14,
@@ -439,6 +447,7 @@ export const careerEvents = [
 
 {id:'team-board-order',minSeason:2,maxSeason:8,minLevel:1,maxLevel:8,
   title:'El primer tablero',text:'El capitán te ofrece jugar en el primer tablero del equipo. El rival será mucho más fuerte y un mal resultado puede costar el match.',
+  image:'assets/images/team-board-order.jpeg',
   choices:[
   {id:'board-one',
    label:'Aceptar el primer tablero',description:'Tomás la responsabilidad más difícil.',chance:55,successElo:15,failureElo:-15,
@@ -451,6 +460,7 @@ export const careerEvents = [
 
 {id:'time-control-choice',minSeason:1,maxSeason:10,minLevel:1,maxLevel:7,
   title:'Dos torneos, un fin de semana',text:'Coinciden un abierto rápido con premios altos y un torneo clásico ideal para tu preparación. Solo podés jugar uno.',
+  image:'assets/images/time-control-choice.jpeg',
   choices:[
   {id:'rapid',
    label:'Jugar el rápido',description:'Más riesgo, más rivales y premio inmediato.',chance:52,successElo:15,failureElo:-15,
@@ -463,6 +473,7 @@ export const careerEvents = [
 
 {id:'seconds-advice',minSeason:4,maxSeason:9,minLevel:3,maxLevel:9,
   title:'El consejo del segundo',text:'Minutos antes de una partida decisiva, tu segundo recomienda cambiar toda la preparación porque vio algo preocupante.',
+  image:'assets/images/seconds-advice.jpeg',
   choices:[
   {id:'trust-second',
    label:'Seguir su recomendación',description:'Confiás en su análisis de último momento.',chance:65,successElo:15,failureElo:-15,
@@ -473,26 +484,27 @@ export const careerEvents = [
    successTitle:'La convicción pesa',successText:'El rival evita su propia novedad y tu plan funciona.',
    failureTitle:'La advertencia era correcta',failureText:'Caés exactamente en la variante que tu segundo había detectado.'}]},
 
-// {id:'streamer-invitation',minSeason:3,maxSeason:10,minLevel:1,maxLevel:10,
-//   title:'La invitación del streamer',text:'Un creador famoso te invita a jugar partidas rápidas en vivo la noche anterior a una ronda importante.',
-//   realStory: {
-//     title: 'Firouza se queda toda la noche jugando bullet durante el Torneo de Candidatos (2022).',
-//     description: 'Luego de un mal día, Firouza estuvo conectado en Chess hasta las 5:43 de la madrugada con el famoso jugador y streamer Naroditsky (hora de Madrid donde se disputaba el Torneo de Candidatos) y llegó a jugar sin dormir. Sí, perdió al día siguiente',
-//     spotifyUrl: 'https://open.spotify.com/episode/27pdBR4ZblyckN6X7Vxqat?si=FllkIYmATmmKikup7GoEkA&utm_source=copy-link&sci=spotify%3Acard-config%3A4BrWALnJnbcl8N7YKRpKzI',
-//     image: "assets/images/dingliren.jpeg"
-//   },
-//   choices:[
-//   {id:'stream',
-//    label:'Aceptar la transmisión',description:'Ganás exposición, pero sacrificás descanso.',chance:62,successElo:14,failureElo:-12,
-//    successTitle:'La cámara te potencia',successText:'La transmisión suma seguidores y llegás relajado a la ronda.',
-//    failureTitle:'Una partida de más',failureText:'Te acostás tarde y al día siguiente calculás con la cabeza pesada.'},
-//   {id:'study',
-//    label:'Apagar la cámara y estudiar',description:'Priorizás la ronda y el sueño.',chance:84,successElo:14,failureElo:-5,
-//    successTitle:'Silencio productivo',successText:'Encontrás una idea clave en las partidas de tu rival.',
-//    failureTitle:'La oportunidad mediática pasa',failureText:'La invitación no se repite y perdés una vidriera importante.'}]},
+{id:'streamer-invitation',minSeason:3,maxSeason:10,minLevel:1,maxLevel:10,
+  title:'La invitación del streamer',text:'Un creador famoso te invita a jugar partidas rápidas en vivo la noche anterior a una ronda importante.',
+  realStory: {
+    title: 'Firouza se queda toda la noche jugando bullet durante el Torneo de Candidatos (2022).',
+    description: 'Luego de un mal día, Firouza estuvo conectado en Chess hasta las 5:43 de la madrugada con el famoso jugador y streamer Naroditsky (hora de Madrid donde se disputaba el Torneo de Candidatos) y llegó a jugar sin dormir. Sí, perdió al día siguiente',
+    spotifyUrl: 'https://open.spotify.com/episode/27pdBR4ZblyckN6X7Vxqat?si=FllkIYmATmmKikup7GoEkA&utm_source=copy-link&sci=spotify%3Acard-config%3A4BrWALnJnbcl8N7YKRpKzI',
+    image: "assets/images/streamer-invitation.jpeg"
+  },
+  choices:[
+  {id:'stream',
+   label:'Aceptar la transmisión',description:'Ganás exposición, pero sacrificás descanso.',chance:62,successElo:14,failureElo:-12,
+   successTitle:'La cámara te potencia',successText:'La transmisión suma seguidores y llegás relajado a la ronda.',
+   failureTitle:'Una partida de más',failureText:'Te acostás tarde y al día siguiente calculás con la cabeza pesada.'},
+  {id:'study',
+   label:'Apagar la cámara y estudiar',description:'Priorizás la ronda y el sueño.',chance:84,successElo:14,failureElo:-5,
+   successTitle:'Silencio productivo',successText:'Encontrás una idea clave en las partidas de tu rival.',
+   failureTitle:'La oportunidad mediática pasa',failureText:'La invitación no se repite y perdés una vidriera importante.'}]},
 
 {id:'final-teach-or-play',minSeason:9,maxSeason:10,minLevel:1,maxLevel:10,
   title:'La mesa que queda libre',text:'El club que te formó quiere que dirijas su escuela. Al mismo tiempo llega una invitación para seguir una temporada más en el circuito profesional.',
+  image:'assets/images/final-teach-offer.jpeg',
   finalCandidate:true,
   choices:[
   {id:'teach',
@@ -506,6 +518,7 @@ export const careerEvents = [
 
 {id:'final-book-offer',minSeason:9,maxSeason:10,minLevel:1,maxLevel:10,
   title:'Las páginas de la carrera',text:'Una editorial quiere publicar tus cuadernos de preparación. Para contar toda la verdad tendrías que revelar errores, discusiones y secretos compartidos por tu equipo.',
+  image:'assets/images/final-book-offer.jpeg',
   finalCandidate:true,
   choices:[
   {id:'publish-all',
