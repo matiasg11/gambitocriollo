@@ -83,7 +83,7 @@ header{height:84px;padding:0 clamp(20px,5vw,60px);display:flex;align-items:cente
 .start-feedback{min-height:24px;margin:10px 0 0!important;font-size:13px!important;font-weight:800;color:var(--orange)}
 .welcome button,.primary,.secondary{padding:15px 20px;border:2px solid var(--ink);font-weight:800;box-shadow:4px 4px 0 var(--ink);cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}.welcome form button,.primary{background:var(--orange);color:white}.secondary{background:var(--yellow);color:var(--ink)}button:disabled{cursor:wait;opacity:.65}.welcome button:not(:disabled):hover,.primary:not(:disabled):hover,.secondary:not(:disabled):hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink);filter:saturate(1.08)}.welcome button:not(:disabled):active,.primary:not(:disabled):active,.secondary:not(:disabled):active{transform:translate(2px,2px) scale(.985);box-shadow:1px 1px 0 var(--ink)}
 
-.game{display:grid;grid-template-columns:270px 1fr;min-height:calc(100vh - 84px)}
+.game{display:grid;grid-template-columns:270px minmax(0,1fr);min-height:0}
 .profile{background:var(--green);color:var(--cream);padding:45px 30px}.profile .tag{color:var(--yellow)}.profile h2{font-size:30px;margin:0}.profile>p:nth-of-type(2){margin-top:5px;color:#d4ddce}
 .debug-badge{display:inline-block;margin:10px 0 0!important;padding:7px 9px;background:var(--yellow);color:var(--ink)!important;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
 .elo-breakdown{margin:-25px 0 34px;font-size:11px;line-height:1.45;color:#d4ddce;text-transform:uppercase;letter-spacing:.06em}
@@ -576,4 +576,175 @@ header{
 
   object-fit:cover !important;
   object-position:center center !important;
+}
+
+/* ==================================================
+   LAYOUT RESPONSIVE
+   Desktop: header + footer siempre visibles.
+   El contenido del juego scrollea internamente.
+   Mobile/pantallas chicas: scroll normal de página.
+   ================================================== */
+
+
+/* ---------- BASE: mobile / pantallas chicas ---------- */
+
+html,
+body{
+  min-height:100%;
+}
+
+body{
+  overflow-y:auto;
+}
+
+.app{
+  width:100%;
+  max-width:1180px;
+
+  min-height:100vh;
+  height:auto;
+
+  margin:auto;
+
+  display:block;
+
+  overflow:visible;
+
+  background:var(--paper);
+}
+
+.welcome{
+  height:auto;
+  min-height:calc(100vh - 76px);
+  overflow:visible;
+}
+
+.game{
+  height:auto;
+  min-height:0;
+  overflow:visible;
+}
+
+.stage{
+  overflow:visible;
+}
+
+.site-footer{
+  position:static;
+}
+
+
+/* ---------- DESKTOP NORMAL ---------- */
+
+@media (min-width:900px) and (min-height:700px){
+
+  html,
+  body{
+    height:100%;
+    overflow:hidden;
+  }
+
+  .app{
+    height:100vh;
+    height:100dvh;
+    min-height:0;
+
+    display:grid;
+
+    /*
+      84 px header
+      centro flexible
+      footer automático
+    */
+    grid-template-rows:
+      84px
+      minmax(0,1fr)
+      auto;
+
+    overflow:hidden;
+  }
+
+
+  /* -------------------------
+     PANTALLA INICIAL
+     ------------------------- */
+
+  .welcome{
+    height:100%;
+    min-height:0;
+
+    overflow:hidden;
+  }
+
+
+  /* -------------------------
+     JUEGO
+     ------------------------- */
+
+  .game{
+    height:100%;
+    min-height:0;
+
+    display:grid;
+    grid-template-columns:270px minmax(0,1fr);
+
+    overflow:hidden;
+  }
+
+
+  /* Barra verde izquierda */
+
+  .profile{
+    min-height:0;
+
+    overflow-y:auto;
+  }
+
+
+  /* Sector donde están
+     temporadas, puzzles,
+     dilemas y resultados */
+
+  .stage{
+    min-width:0;
+    min-height:0;
+
+    height:100%;
+
+    overflow-x:hidden;
+    overflow-y:auto;
+
+    /*
+      Importante:
+      no centrar verticalmente contenido
+      más grande que la pantalla.
+    */
+    align-items:flex-start;
+
+    padding-top:clamp(35px,5vh,65px);
+    padding-bottom:50px;
+  }
+
+
+  /*
+    Hace que cualquiera de las pantallas
+    internas pueda crecer todo lo necesario.
+  */
+
+  .stage > div{
+    width:100%;
+    min-width:0;
+  }
+
+
+  /* Footer siempre visible */
+
+  .site-footer{
+    position:static;
+
+    min-height:44px;
+
+    padding:7px 20px;
+  }
+
 }
