@@ -207,6 +207,52 @@ header{height:76px;padding:0 clamp(20px,5vw,60px);display:flex;align-items:cente
   background:var(--cream);
   border:2px solid var(--cream);
 }
+.event-layout{
+  display:grid;
+  grid-template-columns:260px minmax(0,1fr);
+  gap:32px;
+  align-items:start;
+}
+
+.event-image-wrap{
+  width:100%;
+}
+
+.event-image{
+  display:block;
+
+  width:100%;
+  aspect-ratio:1/1;
+
+  object-fit:cover;
+
+  border:3px solid var(--ink);
+  box-shadow:6px 6px 0 var(--ink);
+
+  background:var(--cream);
+}
+
+.event-copy{
+  min-width:0;
+}
+
+.event-copy h2{
+  margin-top:0;
+}
+
+@media(max-width:800px){
+  .event-layout{
+    grid-template-columns:1fr;
+  }
+
+  .event-image-wrap{
+    max-width:420px;
+  }
+
+  .event-image{
+    aspect-ratio:16/9;
+  }
+}
 @media(max-width:760px){
   header{height:64px}.welcome{grid-template-columns:1fr}.welcome aside{min-height:320px}.welcome aside:before{width:250px;height:250px}.welcome aside span{font-size:190px;top:105px}.welcome aside i{font-size:140px;top:195px}.welcome form div{display:grid;gap:8px}
   .game{grid-template-columns:1fr}.profile{padding:20px}.profile dl{display:grid;grid-template-columns:repeat(3,1fr);margin:15px 0}.profile dl div{display:block;border:0;padding:4px}.stage{padding:38px 20px;align-items:start}.puzzle-grid{grid-template-columns:1fr}.board-wrap{margin:auto}.choices{grid-template-columns:1fr}.career-card{padding:20px}.career-card-hero{grid-template-columns:1fr}.final-title-badge{width:100%}.career-card-stats{grid-template-columns:1fr}.career-card-stats article+article{border-left:0;border-top:2px solid var(--ink)}.final-achievements{grid-template-columns:1fr}.final-achievements article:nth-child(odd){border-right:0}.global-summary{grid-template-columns:1fr 1fr}.global-summary .placement{grid-column:1/-1}.leaderboard-head{display:block}.leaderboard-head small{display:block;margin-top:5px}.ending-actions{align-items:stretch}.ending-actions button,.ending-actions a{width:100%;text-align:center}.cfm-link{padding:12px}

@@ -394,6 +394,16 @@ function chooseEvent(session: Session) {
   if (planned.length) return pool[0];
   return pool[(session.season * 7 + session.level * 3 + session.event_history.length) % pool.length];
 }
+function publicImagePath(value: any) {
+  const image =
+    typeof value === 'string'
+      ? value.trim()
+      : '';
+
+  return /^assets\/images\/[A-Za-z0-9._/-]+$/.test(image)
+    ? image
+    : '';
+}
 
 function publicRealStory(value: any) {
   if (!value || typeof value !== 'object') return null;
@@ -414,10 +424,7 @@ function publicRealStory(value: any) {
       : '';
 
   // Solo permitimos imágenes de la carpeta del juego.
-  const image =
-  /^assets\/images\/[A-Za-z0-9._/-]+$/.test(rawImage)
-    ? rawImage
-    : '';
+  const image = publicImagePath(value.image);
 
   let spotifyUrl = '';
 
@@ -458,14 +465,19 @@ function publicEvent(event: any) {
       spotifyUrl = candidate.href;
     }
   } catch { /* El enlace es opcional. */ }
+  const image = publicImagePath(
+  event.image || event.realStory?.image
+);
 
   return {
     id: event.id,
     title: event.title,
     text: event.text,
+     image,
     realStory: publicRealStory(event.realStory),
     longText: typeof event.longText === 'string' ? event.longText : '',
     spotifyUrl,
+   
     spotifyLabel: spotifyUrl && typeof event.spotifyLabel === 'string' ? event.spotifyLabel : '',
     choices: event.choices.map((choice: any) => ({
       id: choice.id,

@@ -40,6 +40,27 @@ let endingScreenshotFile = null;
 let endingScreenshotPromise = null;
 const eventPrefetches = new Map();
 let currentRealStory = null;
+let currentEventImage = '';
+
+function renderEventImage(value){
+  const wrap = $('eventImageWrap');
+  const image = $('eventImage');
+
+  if(!wrap || !image) return;
+
+  const src = String(value || '').trim();
+
+  if(!src){
+    wrap.hidden = true;
+    image.removeAttribute('src');
+    image.alt = '';
+    return;
+  }
+
+  image.src = src;
+  image.alt = 'Imagen relacionada con la situación';
+  wrap.hidden = false;
+}
 
 async function serverAction(action, values = {}){
   const visitorToken = localStorage.getItem(VISITOR_KEY);
@@ -119,14 +140,16 @@ function hideRealStory(){
   list.innerHTML = '';
 }
 
-function renderRealStory(value){
+function renderRealStory(value, fallbackImage = ''){
   const story = normalizeRealStory(value);
 
   if(!story){
     hideRealStory();
     return;
   }
-
+  const storyImage =
+  story.image || String(fallbackImage || '').trim();
+  
   const box = $('realStory');
   const list = $('realStoryList');
 
@@ -143,11 +166,16 @@ function renderRealStory(value){
   const card = document.createElement('article');
   card.className = 'real-story-card';
 
-  if(story.image){
+  if(storyImage){
     const image = document.createElement('img');
+
     image.className = 'real-story-image';
-    image.src = story.image;
-    image.alt = story.title || 'Imagen relacionada con la historia real';
+    image.src = storyImage;
+
+    image.alt =
+      story.title ||
+      'Imagen relacionada con la historia real';
+
     image.loading = 'lazy';
 
     card.appendChild(image);
@@ -473,6 +501,8 @@ function finishExercise(result){
 
 async function showEvent(finalEvent = false){
   currentRealStory = null;
+  currentEventImage = '';
+  renderEventImage('');
   screens('event');
   const box = $('eventChoices');
   box.innerHTML = '<p>El servidor está preparando la situación…</p>';
@@ -484,6 +514,8 @@ async function showEvent(finalEvent = false){
     const result = await (finalEvent ? serverAction('final-event') : (prefetchEvent() || serverAction('event')));
     applyServerState(result.state);
     const event = result.event;
+    currentEventImage = event.image ?? '';
+    renderEventImage(currentEventImage);
     currentRealStory = event.realStory ?? null;
     $('eventTag').textContent = finalEvent ? 'Dilema final · La última decisión' : `Temporada ${state.season} · Situación de carrera`;
     $('eventTitle').textContent = event.title;
@@ -517,8 +549,13 @@ async function resolveEvent(choice,box){
     applyServerState(result.state);
     persist();
     screens('result');
-    renderRealStory(currentRealStory);
+    renderRealStory(
+      currentRealStory,
+      currentEventImage
+    );
+
     currentRealStory = null;
+    currentEventImage = '';
     $('resultTag').textContent = result.success ? 'La decisión funciona' : 'La carrera se complica';
     $('resultTitle').textContent = result.outcome.title;
     $('resultText').textContent = `${result.outcome.text} Impacto: ${result.change >= 0 ? '+' : ''}${result.change} ELO.`;
