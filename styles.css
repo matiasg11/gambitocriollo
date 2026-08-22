@@ -64,8 +64,8 @@ header{height:84px;padding:0 clamp(20px,5vw,60px);display:flex;align-items:cente
 .brand img{
   display:block;
 
-  width:58px;
-  height:58px;
+  width:126px;
+  height:84px;
 
   object-fit:contain;
 }
@@ -82,9 +82,24 @@ header{height:84px;padding:0 clamp(20px,5vw,60px);display:flex;align-items:cente
 .welcome input,.welcome select{width:100%;min-width:0;padding:15px;background:var(--cream);border:2px solid var(--ink);color:var(--ink)}.welcome select{cursor:pointer}
 .start-feedback{min-height:24px;margin:10px 0 0!important;font-size:13px!important;font-weight:800;color:var(--orange)}
 .welcome button,.primary,.secondary{padding:15px 20px;border:2px solid var(--ink);font-weight:800;box-shadow:4px 4px 0 var(--ink);cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}.welcome form button,.primary{background:var(--orange);color:white}.secondary{background:var(--yellow);color:var(--ink)}button:disabled{cursor:wait;opacity:.65}.welcome button:not(:disabled):hover,.primary:not(:disabled):hover,.secondary:not(:disabled):hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink);filter:saturate(1.08)}.welcome button:not(:disabled):active,.primary:not(:disabled):active,.secondary:not(:disabled):active{transform:translate(2px,2px) scale(.985);box-shadow:1px 1px 0 var(--ink)}
-.welcome aside{position:relative;overflow:hidden;background:var(--green);font-family:'Segoe UI Symbol',serif}.welcome aside:before{content:'';position:absolute;width:370px;height:370px;border-radius:50%;background:var(--yellow);top:70px;right:-50px}
-.welcome aside span,.welcome aside i{position:absolute;font-style:normal;line-height:1;text-shadow:9px 9px #0002}.welcome aside span{font-size:270px;top:230px;right:110px;color:var(--ink)}.welcome aside i{font-size:190px;top:390px;right:-20px;color:var(--cream)}
+.welcome-art{
+  display:grid;
+  place-items:center;
 
+  padding:60px;
+
+  background:var(--green);
+  overflow:hidden;
+}
+
+.welcome-art img{
+  display:block;
+
+  width:min(100%,420px);
+  max-height:520px;
+
+  object-fit:contain;
+}
 .game{display:grid;grid-template-columns:270px 1fr;min-height:calc(100vh - 84px)}
 .profile{background:var(--green);color:var(--cream);padding:45px 30px}.profile .tag{color:var(--yellow)}.profile h2{font-size:30px;margin:0}.profile>p:nth-of-type(2){margin-top:5px;color:#d4ddce}
 .debug-badge{display:inline-block;margin:10px 0 0!important;padding:7px 9px;background:var(--yellow);color:var(--ink)!important;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
