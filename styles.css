@@ -336,15 +336,14 @@ header{
 
 .welcome-art{
   min-height:0;
+  width:100%;
+  height:100%;
 
-  display:grid;
-  place-items:center;
-
-  padding:clamp(24px,4vh,50px);
-
-  background:var(--green);
+  padding:0;
 
   overflow:hidden;
+
+  background:var(--green);
 }
 
 .welcome-art img{
@@ -353,10 +352,8 @@ header{
   width:100%;
   height:100%;
 
-  max-width:420px;
-  max-height:100%;
-
-  object-fit:contain;
+  object-fit:cover;
+  object-position:center;
 }
 
 
