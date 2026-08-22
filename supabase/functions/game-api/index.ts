@@ -891,7 +891,13 @@ const finalEvent =
         ...completed,
         updated: undefined,
         state: publicSession(completed.updated),
-        stats: completed.updated.completed_at ? await publicStats(admin, visitorId) : undefined,
+        stats: completed.updated.completed_at
+  ? await publicStats(
+      admin,
+      visitorId,
+      completed.updated.id
+    )
+  : undefined,
       });
     }
 
