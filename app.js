@@ -95,7 +95,7 @@ function currentElo(){ return scoreElo(state.level,state.decisionElo,state.exerc
 function displayName(){ return `${state.chessTitle ? state.chessTitle + ' ' : ''}${state.name}`; }
 function shareSummaryText(){
   const title = state.chessTitle ? `Título ${state.chessTitle}` : `Nivel ${state.level}`;
-  return `${displayName()} terminó Gambito Criollo · ${title} · ${state.wins}/${state.exerciseTotal} ejercicios · ${state.decisionPositive}/${state.decisionTotal} decisiones favorables · ${currentElo()} ELO`;
+  return `${displayName()} terminó Ajedrez del Fin del Mundo · ${title} · ${state.wins}/${state.exerciseTotal} ejercicios · ${state.decisionPositive}/${state.decisionTotal} decisiones favorables · ${currentElo()} ELO`;
 }
 function stageName(){ return levelStageName(state.season,state.level) ?? seasonScreen(state.season).title; }
 function safeSpotifyUrl(value){
@@ -256,14 +256,13 @@ function stats(){
 
 async function showGameSplash(){
   const splash = $('gameSplash');
-  const thumb = $('introThumb');
 
-  if(!splash || !thumb) return;
+  if(!splash) return;
 
   splash.hidden = false;
 
-  // La imagen queda grande durante 3 segundos.
-  await new Promise(resolve => setTimeout(resolve, 2000));
+  // Logo de presentación durante 3 segundos.
+  await new Promise(resolve => setTimeout(resolve, 3000));
 
   splash.classList.add('leaving');
 
@@ -271,9 +270,6 @@ async function showGameSplash(){
 
   splash.hidden = true;
   splash.classList.remove('leaving');
-
-  // Luego queda visible en pequeño durante el juego.
-  thumb.hidden = false;
 }
 
 async function enterGame(){
@@ -656,7 +652,7 @@ async function prepareEndingScreenshot(){
       scrollY: -window.scrollY,
     });
     const blob = await canvasBlob(canvas);
-    endingScreenshotFile = new File([blob], 'gambito-criollo-resultado.png', {type:'image/png'});
+    endingScreenshotFile = new File([blob], 'Ajedrez-del-Fin-del-Mundo-resultado.png', {type:'image/png'});
     button.dataset.screenshotReady = 'true';
     return endingScreenshotFile;
   })().catch(error => {
@@ -693,7 +689,7 @@ async function shareResults(){
       return;
     }
     const shareText = shareSummaryText();
-    const shareData = {title:'Mi carrera en Gambito Criollo',text:shareText,url:GAME_URL,files:[file]};
+    const shareData = {title:'Mi carrera en Ajedrez del Fin del Mundo',text:shareText,url:GAME_URL,files:[file]};
     if(navigator.share && navigator.canShare?.({files:[file]})){
       await navigator.share(shareData);
       $('shareFeedback').textContent = 'Captura, texto y enlace compartidos.';
