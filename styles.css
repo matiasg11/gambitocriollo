@@ -84,7 +84,7 @@ header{height:84px;padding:0 clamp(20px,5vw,60px);display:flex;align-items:cente
 .welcome button,.primary,.secondary{padding:15px 20px;border:2px solid var(--ink);font-weight:800;box-shadow:4px 4px 0 var(--ink);cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}.welcome form button,.primary{background:var(--orange);color:white}.secondary{background:var(--yellow);color:var(--ink)}button:disabled{cursor:wait;opacity:.65}.welcome button:not(:disabled):hover,.primary:not(:disabled):hover,.secondary:not(:disabled):hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink);filter:saturate(1.08)}.welcome button:not(:disabled):active,.primary:not(:disabled):active,.secondary:not(:disabled):active{transform:translate(2px,2px) scale(.985);box-shadow:1px 1px 0 var(--ink)}
 .welcome-art{
   min-height:0;
-  width:100%;
+  width:auto;
   height:100%;
 
   padding:0;
@@ -97,7 +97,7 @@ header{height:84px;padding:0 clamp(20px,5vw,60px);display:flex;align-items:cente
 .welcome-art img{
   display:block;
 
-  width:100%;
+  width:auto;
   height:100%;
 
   object-fit:cover;
