@@ -64,8 +64,8 @@ header{height:84px;padding:0 clamp(20px,5vw,60px);display:flex;align-items:cente
 .brand img{
   display:block;
 
-  width:176px;
-  height:100px;
+  width:58px;
+  height:58px;
 
   object-fit:contain;
 }
