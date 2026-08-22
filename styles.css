@@ -538,3 +538,42 @@ header{
 .nearby-leaderboard{border-color:var(--orange);box-shadow:6px 6px 0 var(--orange)}
 @media(max-width:760px){.start-fields{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.choices button,.stage>div:not([hidden]){transform:none!important}}
+
+
+/* ==================================================
+   FOTO WELCOME - FORZAR OCUPACIÓN TOTAL DEL PANEL
+   ================================================== */
+
+#welcome .welcome-art{
+  display:block !important;
+
+  width:100% !important;
+  height:100% !important;
+
+  min-width:0 !important;
+  min-height:0 !important;
+
+  padding:0 !important;
+  margin:0 !important;
+
+  overflow:hidden !important;
+}
+
+#welcome .welcome-art img{
+  display:block !important;
+
+  width:100% !important;
+  height:100% !important;
+
+  max-width:none !important;
+  max-height:none !important;
+
+  min-width:100% !important;
+  min-height:100% !important;
+
+  margin:0 !important;
+  padding:0 !important;
+
+  object-fit:cover !important;
+  object-position:center center !important;
+}
