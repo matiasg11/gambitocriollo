@@ -6,7 +6,7 @@ export const careerEvents = [
     title: 'Kasparov acusa a IBM después de perder con Deep Blue (1997).',
     description: 'Tras caer ante la computadora, Kasparov insinuó que IBM podía haber recibido ayuda humana durante el match y pidió revisar los registros de cálculo. IBM negó la acusación, rechazó una revancha inmediata y desmontó la máquina, lo que alimentó todavía más las sospechas, nunca demostradas.',
     spotifyUrl: 'https://open.spotify.com/episode/1O5smllwNZhEZp4dGrEkBY?si=61324f73a55f4e4a',
-    image: "assets/images/deepblue.png"
+    image: "assets/images/deepblue.jpeg"
   },
   choices:[
   {id:'demand-logs',
