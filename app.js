@@ -97,6 +97,9 @@ function shareSummaryText(){
   const title = state.chessTitle ? `Título ${state.chessTitle}` : `Nivel ${state.level}`;
   return `${displayName()} terminó Ajedrez del Fin del Mundo · ${title} · ${state.wins}/${state.exerciseTotal} ejercicios · ${state.decisionPositive}/${state.decisionTotal} decisiones favorables · ${currentElo()} ELO`;
 }
+function shareInviteText(){
+  return `${shareSummaryText()}\n\n¿Hasta dónde llegás vos? Jugá acá:`;
+}
 function stageName(){ return levelStageName(state.season,state.level) ?? seasonScreen(state.season).title; }
 function safeSpotifyUrl(value){
   try {
@@ -617,12 +620,15 @@ function renderGlobalStats(globalStats){
   if(state.debug){
     $('playerPlacement').textContent = 'Modo debug';
     $('playerPercentile').textContent = 'Las partidas BOCA no alteran el ranking.';
+    $('sharePlacement').textContent = 'Carrera completada · Modo debug';
   } else if(current){
     $('playerPlacement').textContent = `Puesto ${current.position} de ${current.rankedPlayers}`;
     $('playerPercentile').textContent = `Superaste al ${current.percentile}% de los jugadores clasificados.`;
+    $('sharePlacement').textContent = `Puesto ${current.position} · Top ${Math.max(1,100-current.percentile)}%`;
   } else {
     $('playerPlacement').textContent = 'Sin clasificación';
     $('playerPercentile').textContent = 'No se pudo ubicar esta carrera.';
+    $('sharePlacement').textContent = 'Carrera completada';
   }
   renderHistogram(globalStats);
   renderLeaderboard(globalStats);
@@ -662,7 +668,7 @@ async function prepareEndingScreenshot(){
     return null;
   }).finally(() => {
     button.disabled = false;
-    button.textContent = 'Compartir mi carrera';
+    button.textContent = 'Guardar imagen';
   });
   return endingScreenshotPromise;
 }
@@ -688,7 +694,7 @@ async function shareResults(){
       prepareEndingScreenshot();
       return;
     }
-    const shareText = shareSummaryText();
+    const shareText = shareInviteText();
     const shareData = {title:'Mi carrera en Ajedrez del Fin del Mundo',text:shareText,url:GAME_URL,files:[file]};
     if(navigator.share && navigator.canShare?.({files:[file]})){
       await navigator.share(shareData);
@@ -701,6 +707,56 @@ async function shareResults(){
   } catch(error){
     if(error?.name !== 'AbortError') $('shareFeedback').textContent = 'No se pudo compartir. Probá nuevamente o guardá la captura desde otro navegador.';
   }
+}
+
+async function shareToInstagram(){
+  $('shareFeedback').textContent = '';
+  const file = endingScreenshotFile || await prepareEndingScreenshot();
+  if(!file) return;
+  try {
+    if(navigator.share && navigator.canShare?.({files:[file]})){
+      await navigator.share({files:[file],title:'Mi carrera en Ajedrez del Fin del Mundo'});
+      $('shareFeedback').textContent = 'Elegí Instagram y luego Historias para publicar tu resultado.';
+      return;
+    }
+    downloadScreenshot(file);
+    await navigator.clipboard?.writeText(`${shareInviteText()}\n${GAME_URL}`);
+    $('shareFeedback').textContent = 'Guardamos la imagen. Abrí Instagram, creá una historia y agregala; el enlace quedó copiado.';
+  } catch(error){
+    if(error?.name !== 'AbortError') $('shareFeedback').textContent = 'No se pudo abrir el menú para compartir. Probá con “Guardar imagen”.';
+  }
+}
+
+async function shareToWhatsapp(){
+  $('shareFeedback').textContent = '';
+  const file = endingScreenshotFile || await prepareEndingScreenshot();
+  if(!file) return;
+  try {
+    if(navigator.share && navigator.canShare?.({files:[file]})){
+      await navigator.share({files:[file],title:'Mi carrera en Ajedrez del Fin del Mundo',text:shareInviteText(),url:GAME_URL});
+      $('shareFeedback').textContent = 'Elegí WhatsApp y el chat donde querés compartir el desafío.';
+      return;
+    }
+    downloadScreenshot(file);
+    window.open(`https://wa.me/?text=${encodeURIComponent(`${shareInviteText()}\n${GAME_URL}`)}`,'_blank','noopener,noreferrer');
+    $('shareFeedback').textContent = 'Abrimos WhatsApp con el desafío y guardamos la imagen para que puedas adjuntarla.';
+  } catch(error){
+    if(error?.name !== 'AbortError') $('shareFeedback').textContent = 'No se pudo abrir WhatsApp. Probá con “Guardar imagen”.';
+  }
+}
+
+function setupShareUI(){
+  const cardFooter = document.createElement('div');
+  cardFooter.className = 'career-card-footer';
+  cardFooter.innerHTML = '<div class="career-card-cta"><small id="sharePlacement">Carrera completada</small><strong>¿Hasta dónde llegás vos?</strong><span>Jugá en matiasg11.github.io/gambitocriollo</span></div>';
+  cardFooter.prepend($('endingText'));
+  $('shareCard').append(cardFooter);
+  const actions = document.querySelector('.ending-actions');
+  actions.insertAdjacentHTML('beforebegin','<div class="share-panel" data-html2canvas-ignore="true"><div class="share-panel-copy"><span>Compartí tu resultado</span><strong>Desafiá a tus amigos</strong><small>La imagen incluye tu carrera y el enlace para jugar.</small></div><div class="share-social-actions"><button id="shareInstagram" class="social-share instagram-share" type="button" aria-label="Compartir en Instagram Stories"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4.25"></circle><circle class="social-icon-dot" cx="17.4" cy="6.7" r="1"></circle></svg><span><small>Compartir en</small>Instagram Stories</span></button><button id="shareWhatsapp" class="social-share whatsapp-share" type="button" aria-label="Compartir en WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 11.7a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.4-4.9a8.4 8.4 0 1 1 16.1-3.9Z"></path><path d="M8.2 7.8c.2-.5.5-.5.8-.5h.4c.2 0 .4 0 .6.4l.8 1.9c.1.3.1.5-.1.7l-.6.8c-.2.2-.2.4 0 .7.5.9 1.2 1.7 2.1 2.3.8.5 1.4.7 1.7.8.3.1.5 0 .7-.2l.9-1c.2-.3.5-.3.7-.2l1.9.9c.3.1.4.3.4.5 0 .2-.1 1.2-.7 1.8-.6.6-1.5.9-2.5.7-1-.2-2.3-.7-4-1.6-2.4-1.3-3.9-3.7-4.1-4-.2-.3-1-1.5-1-2.8 0-1.3.7-2 1-2.2Z"></path></svg><span><small>Compartir en</small>WhatsApp</span></button></div></div>');
+  $('share').textContent = 'Guardar imagen';
+  $('share').classList.add('share-download');
+  $('shareInstagram').onclick = shareToInstagram;
+  $('shareWhatsapp').onclick = shareToWhatsapp;
 }
 
 async function ending(){
@@ -779,6 +835,7 @@ COUNTRIES.forEach(country => {
 $('country').value = 'AR';
 $('reset').onclick = reset;
 $('again').onclick = playAgain;
+setupShareUI();
 $('share').onclick = shareResults;
 
 // const saved = localStorage.getItem(GAME_KEY);
