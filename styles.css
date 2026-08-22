@@ -95,8 +95,8 @@ header{height:84px;padding:0 clamp(20px,5vw,60px);display:flex;align-items:cente
 .welcome-art img{
   display:block;
 
-  /*width:min(100%,420px);*/
-  max-height:520px;
+  /*width:min(100%,420px);
+  max-height:520px;*/
 
   object-fit:contain;
 }
