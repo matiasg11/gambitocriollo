@@ -11,7 +11,7 @@ import { COUNTRIES, countryLabel } from './countries.js';
 const GAME_KEY = 'gambito-v6';
 const VISITOR_KEY = 'gambito-visitor-v1';
 const CLIENT_VERSION = '1.7.0';
-const GAME_URL = 'https://matiasg11.github.io/gambitocriollo/';
+const GAME_URL = 'https://cienciadelfindelmundo.com.ar/ajedrez/';
 const pieceName = { k:'rey', q:'dama', r:'torre', b:'alfil', n:'caballo', p:'peón' };
 const $ = id => document.getElementById(id);
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);

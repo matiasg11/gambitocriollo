@@ -589,7 +589,7 @@ async function publicRanking(admin: any) {
   for (let from = 0; ; from += pageSize) {
     const { data, error } = await admin
       .from('gambito_results')
-      .select('visitor_id,player_name,country_code,max_elo,max_level,decision_positive,decision_total,exercise_positive,exercise_total,completed_at')
+      .select('visitor_id,player_name,max_elo,max_level,decision_positive,decision_total,exercise_positive,exercise_total,completed_at,session:gambito_sessions!inner(country_code)')
       .order('id', { ascending: true })
       .range(from, from + pageSize - 1);
     if (error) throw error;
@@ -616,7 +616,7 @@ async function publicRanking(admin: any) {
     .map((result, index) => ({
       position: index + 1,
       name: result.player_name,
-      countryCode: result.country_code,
+      countryCode: result.session?.country_code || '',
       elo: result.max_elo,
       level: result.max_level,
       decisionPositive: result.decision_positive,
