@@ -21,7 +21,11 @@ const TITLE_RULES = [
   { code: 'IM', threshold: 2400, name: 'Maestro Internacional' },
   { code: 'GM', threshold: 2500, name: 'Gran Maestro' },
 ];
-const ALLOWED_ORIGINS = new Set(['https://matiasg11.github.io']);
+const ALLOWED_ORIGINS = new Set([
+  'https://matiasg11.github.io',
+  'https://cienciadelfindelmundo.com.ar',
+  'https://www.cienciadelfindelmundo.com.ar',
+]);
 
 type JsonRecord = Record<string, unknown>;
 type Session = Record<string, any>;
