@@ -582,6 +582,50 @@ async function publicStats(
   return data;
 }
 
+async function publicRanking(admin: any) {
+  const pageSize = 1000;
+  const results: any[] = [];
+
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await admin
+      .from('gambito_results')
+      .select('visitor_id,player_name,country_code,max_elo,max_level,decision_positive,decision_total,exercise_positive,exercise_total,completed_at')
+      .order('id', { ascending: true })
+      .range(from, from + pageSize - 1);
+    if (error) throw error;
+    results.push(...(data || []));
+    if (!data || data.length < pageSize) break;
+  }
+
+  const bestByVisitor = new Map<string, any>();
+  for (const result of results) {
+    const current = bestByVisitor.get(result.visitor_id);
+    const isBetter = !current
+      || result.max_elo > current.max_elo
+      || (result.max_elo === current.max_elo && result.max_level > current.max_level)
+      || (result.max_elo === current.max_elo && result.max_level === current.max_level && result.exercise_positive > current.exercise_positive)
+      || (result.max_elo === current.max_elo && result.max_level === current.max_level && result.exercise_positive === current.exercise_positive && result.completed_at < current.completed_at);
+    if (isBetter) bestByVisitor.set(result.visitor_id, result);
+  }
+
+  return [...bestByVisitor.values()]
+    .sort((a, b) => b.max_elo - a.max_elo
+      || b.max_level - a.max_level
+      || b.exercise_positive - a.exercise_positive
+      || a.completed_at.localeCompare(b.completed_at))
+    .map((result, index) => ({
+      position: index + 1,
+      name: result.player_name,
+      countryCode: result.country_code,
+      elo: result.max_elo,
+      level: result.max_level,
+      decisionPositive: result.decision_positive,
+      decisionTotal: result.decision_total,
+      exercisePositive: result.exercise_positive,
+      exerciseTotal: result.exercise_total,
+    }));
+}
+
 async function completeExercise(admin: any, session: Session, success: boolean, reward: number) {
   const completedSeason = session.season;
   const previousLevel = session.level;
@@ -647,6 +691,9 @@ Deno.serve(async (request) => {
     const requestedClientVersion = String(payload.clientVersion || '');
     if (!SUPPORTED_CLIENT_VERSIONS.has(requestedClientVersion)) {
       throw new ApiError(409, 'Hay una versión nueva del juego. Recargá la página para continuar.');
+    }
+    if (action === 'ranking') {
+      return response(request, { ok: true, ranking: await publicRanking(admin) });
     }
     const visitor = await resolveVisitor(admin, payload.visitorToken, action === 'start');
     const visitorId = visitor.visitorId;

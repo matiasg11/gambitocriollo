@@ -4,7 +4,7 @@
   content="Ajedrez del Fin del Mundo: una carrera ajedrecística de diez temporadas, tácticas y decisiones."
 >
 <title>Ajedrez del Fin del Mundo</title>
-<link rel="icon" href="assets/images/intro.jpeg" type="image/jpeg"><link rel="stylesheet" href="styles.css?v=1.8.2"></head>
+<link rel="icon" href="assets/images/intro.jpeg" type="image/jpeg"><link rel="stylesheet" href="styles.css?v=1.9.0"></head>
 <body><div id="gameSplash" class="game-splash" hidden>
   <img src="assets/images/intro.jpeg" alt="Ajedrez del Fin del Mundo">
 </div><main class="app">
@@ -18,10 +18,32 @@
     <span>AJEDREZ DEL FIN DEL MUNDO</span>
   </div>
 
-  <button id="reset" class="link">
-    Nueva carrera
-  </button>
+  <div class="header-actions">
+    <button id="openRanking" class="link">Ranking histórico</button>
+    <button id="reset" class="link">Nueva carrera</button>
+  </div>
 </header>
+<section id="historyRanking" class="history-ranking" hidden aria-labelledby="historyRankingTitle">
+  <div class="history-ranking-head">
+    <div><p class="tag">Todos los tiempos</p><h1 id="historyRankingTitle">Ranking histórico</h1><p>La mejor carrera de cada participante, del primero al último.</p></div>
+    <button id="closeRanking" class="secondary" type="button">Volver al juego</button>
+  </div>
+  <p id="historyRankingFeedback" class="ranking-feedback" aria-live="polite">Cargando ranking…</p>
+  <div class="history-table-wrap" hidden>
+    <table class="history-table">
+      <thead><tr>
+        <th><button type="button" data-ranking-sort="position">Puesto <span aria-hidden="true">↕</span></button></th>
+        <th><button type="button" data-ranking-sort="name">Nombre <span aria-hidden="true">↕</span></button></th>
+        <th><button type="button" data-ranking-sort="country">País <span aria-hidden="true">↕</span></button></th>
+        <th><button type="button" data-ranking-sort="elo">ELO <span aria-hidden="true">↕</span></button></th>
+        <th><button type="button" data-ranking-sort="level">Nivel <span aria-hidden="true">↕</span></button></th>
+        <th><button type="button" data-ranking-sort="decisions">Decisiones <span aria-hidden="true">↕</span></button></th>
+        <th><button type="button" data-ranking-sort="exercises">Ejercicios <span aria-hidden="true">↕</span></button></th>
+      </tr></thead>
+      <tbody id="historyRankingBody"></tbody>
+    </table>
+  </div>
+</section>
 <section id="welcome" class="welcome">
 
   <div class="welcome-main">
@@ -168,4 +190,4 @@
     </a>
   </p>
 </footer>
-</main><script type="module" src="app.js?v=1.8.2"></script></body></html>
+</main><script type="module" src="app.js?v=1.9.0"></script></body></html>

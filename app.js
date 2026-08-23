@@ -38,6 +38,10 @@ let movePending = false;
 let latestGlobalStats = null;
 let endingScreenshotFile = null;
 let endingScreenshotPromise = null;
+let historicalRanking = [];
+let historicalRankingLoaded = false;
+let historicalRankingSort = {key:'position',direction:'asc'};
+let rankingPreviousScreen = {welcome:true,game:false};
 const eventPrefetches = new Map();
 let currentRealStory = null;
 let currentEventImage = '';
@@ -572,6 +576,7 @@ function appendRankingRows(body,entries,current){
   entries.forEach(entry => {
     const row = document.createElement('tr');
     if(current && entry.position === current.position) row.className = 'current-player';
+    if(entry.position === 1) row.classList.add('ranking-winner');
     [entry.position,entry.name,countryLabel(entry.countryCode),entry.elo,entry.level,`${entry.decisionPositive}/${entry.decisionTotal}`,`${entry.exercisePositive}/${entry.exerciseTotal}`].forEach(value => {
       const cell = document.createElement('td');
       cell.textContent = value;
@@ -585,6 +590,71 @@ function appendRankingRows(body,entries,current){
     cell.colSpan = 7; cell.textContent = 'Todavía no hay carreras clasificadas.';
     row.appendChild(cell); body.appendChild(row);
   }
+}
+
+function rankingMetric(entry,key){
+  if(key === 'position' || key === 'elo' || key === 'level') return Number(entry[key]) || 0;
+  if(key === 'name') return String(entry.name || '');
+  if(key === 'country') return countryLabel(entry.countryCode);
+  if(key === 'decisions') return entry.decisionTotal ? entry.decisionPositive / entry.decisionTotal : -1;
+  if(key === 'exercises') return entry.exerciseTotal ? entry.exercisePositive / entry.exerciseTotal : -1;
+  return 0;
+}
+
+function renderHistoricalRanking(){
+  const {key,direction} = historicalRankingSort;
+  const multiplier = direction === 'asc' ? 1 : -1;
+  const entries = [...historicalRanking].sort((a,b) => {
+    const left = rankingMetric(a,key);
+    const right = rankingMetric(b,key);
+    const comparison = typeof left === 'string'
+      ? left.localeCompare(right,'es',{sensitivity:'base'})
+      : left - right;
+    return comparison * multiplier || a.position - b.position;
+  });
+  appendRankingRows($('historyRankingBody'),entries,null);
+  document.querySelectorAll('[data-ranking-sort]').forEach(button => {
+    const active = button.dataset.rankingSort === key;
+    const arrow = button.querySelector('span');
+    arrow.textContent = active ? (direction === 'asc' ? '↑' : '↓') : '↕';
+    button.closest('th').setAttribute('aria-sort',active ? (direction === 'asc' ? 'ascending' : 'descending') : 'none');
+  });
+}
+
+async function openHistoricalRanking(){
+  if(!$('historyRanking').hidden) return;
+  rankingPreviousScreen = {welcome:!$('welcome').hidden,game:!$('game').hidden};
+  $('welcome').hidden = true;
+  $('game').hidden = true;
+  $('historyRanking').hidden = false;
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(historicalRankingLoaded) return;
+  $('historyRankingFeedback').hidden = false;
+  $('historyRankingFeedback').textContent = 'Cargando ranking…';
+  try {
+    const result = await serverAction('ranking');
+    historicalRanking = result.ranking || [];
+    historicalRankingLoaded = true;
+    renderHistoricalRanking();
+    document.querySelector('.history-table-wrap').hidden = false;
+    $('historyRankingFeedback').hidden = true;
+  } catch(error){
+    $('historyRankingFeedback').textContent = `No se pudo cargar el ranking. ${error.message}`;
+  }
+}
+
+function closeHistoricalRanking(){
+  $('historyRanking').hidden = true;
+  $('welcome').hidden = !rankingPreviousScreen.welcome;
+  $('game').hidden = !rankingPreviousScreen.game;
+}
+
+function sortHistoricalRanking(event){
+  const key = event.currentTarget.dataset.rankingSort;
+  historicalRankingSort = historicalRankingSort.key === key
+    ? {key,direction:historicalRankingSort.direction === 'asc' ? 'desc' : 'asc'}
+    : {key,direction:['name','country'].includes(key) ? 'asc' : 'desc'};
+  renderHistoricalRanking();
 }
 
 function renderLeaderboard(globalStats){
@@ -835,6 +905,9 @@ COUNTRIES.forEach(country => {
 $('country').value = 'AR';
 $('reset').onclick = reset;
 $('again').onclick = playAgain;
+$('openRanking').onclick = openHistoricalRanking;
+$('closeRanking').onclick = closeHistoricalRanking;
+document.querySelectorAll('[data-ranking-sort]').forEach(button => button.onclick = sortHistoricalRanking);
 setupShareUI();
 $('share').onclick = shareResults;
 

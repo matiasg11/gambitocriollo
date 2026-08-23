@@ -57,6 +57,24 @@ header{
   text-transform:uppercase;
 }
 .link{border:0;border-bottom:1px solid;background:none;font-weight:800;cursor:pointer;color:var(--ink)}
+.header-actions{display:flex;align-items:center;gap:18px;white-space:nowrap}
+.history-ranking{min-height:calc(100vh - 84px);padding:clamp(36px,6vw,70px) clamp(20px,5vw,60px);background:var(--paper)}
+.history-ranking-head{display:flex;align-items:flex-end;justify-content:space-between;gap:28px;margin-bottom:30px}
+.history-ranking-head h1{margin:0;font-size:clamp(42px,7vw,72px);line-height:.95;letter-spacing:-.05em}
+.history-ranking-head p:last-child{margin:14px 0 0;font-size:16px}
+.ranking-feedback{padding:18px 20px;border:2px solid var(--ink);background:var(--cream);font-weight:800;box-shadow:5px 5px 0 var(--ink)}
+.history-table-wrap{overflow-x:auto;border:2px solid var(--ink);background:var(--cream);box-shadow:7px 7px 0 var(--orange)}
+.history-table{width:100%;min-width:820px;border-collapse:collapse}
+.history-table th,.history-table td{padding:14px 16px;border-bottom:1px solid var(--line);text-align:left}
+.history-table th{padding:0;background:var(--yellow)}
+.history-table th+th,.history-table td+td{border-left:1px solid #17151133}
+.history-table th button{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:14px 16px;border:0;background:transparent;color:var(--ink);font-size:10px;font-weight:800;letter-spacing:.08em;text-align:left;text-transform:uppercase;cursor:pointer}
+.history-table th button:hover,.history-table th button:focus-visible{background:#fff3c4}
+.history-table th button span{color:var(--orange);font-size:15px}
+.history-table tbody tr:nth-child(even){background:#f8efdE}
+.history-table tbody tr.ranking-winner{background:#f7dea0;font-weight:800}
+.history-table tbody tr:last-child td{border-bottom:0}
+.history-table td{font-size:13px}
 .welcome{
   min-height:calc(100vh - 84px);
   display:grid;
@@ -390,7 +408,8 @@ body{
 }
 @media(max-width:760px){
   header{
-    height:76px;
+    min-height:76px;
+    height:auto;
     padding-inline:18px;
   }
 
@@ -403,6 +422,14 @@ body{
     width:92px;
     height:76px;
   }
+
+  .brand span{display:none}
+
+  .header-actions{gap:12px}.header-actions .link{font-size:11px}
+
+  .history-ranking{min-height:calc(100vh - 76px);padding:32px 18px}
+
+  .history-ranking-head{display:block}.history-ranking-head .secondary{width:100%;margin-top:22px}
 
   .welcome{
     grid-template-columns:1fr;
