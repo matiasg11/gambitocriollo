@@ -748,7 +748,7 @@ async function shareToWhatsapp(){
 function setupShareUI(){
   const cardFooter = document.createElement('div');
   cardFooter.className = 'career-card-footer';
-  cardFooter.innerHTML = '<div class="career-card-cta"><small id="sharePlacement">Carrera completada</small><strong>¿Hasta dónde llegás vos?</strong><span>Jugá en cienciadelfindelmundo.com.ar</span></div>';
+  cardFooter.innerHTML = '<div class="career-card-cta"><small id="sharePlacement">Carrera completada</small><strong>¿Hasta dónde llegás vos?</strong><span>Jugá en cienciadelfindelmundo.com.ar/ajedrez</span></div>';
   cardFooter.prepend($('endingText'));
   $('shareCard').append(cardFooter);
   const actions = document.querySelector('.ending-actions');
