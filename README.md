@@ -81,7 +81,7 @@ La validación acepta la línea principal de la base y también cualquier jugada
 
 ## Datos simulados del ranking
 
-`scripts/seed-ranking-simulations.sql` genera de forma determinista 2.000 carreras ficticias completas con un ejercicio por temporada. Usa combinaciones de nombres y apellidos habituales en Argentina, repartidas en partes iguales entre nombres de hombres y mujeres. Todos llevan `client_version = 'simulation-ranking-v2'`, que permite distinguirlos y eliminarlos sin afectar partidas reales.
+`scripts/seed-ranking-simulations.sql` mantiene exactamente 3.000 carreras ficticias completas con un ejercicio por temporada, hasta 6 aciertos y un máximo de 2450 ELO. Conserva las simulaciones válidas y completa el lote de forma determinista con `client_version = 'simulation-ranking-v3'`, que permite distinguirlas y eliminarlas sin afectar partidas reales.
 
 Para retirar solamente ese lote de prueba usá `scripts/clear-ranking-simulations.sql`. Las partidas reales no se eliminan.
 
