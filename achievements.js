@@ -38,11 +38,10 @@ export const DECISION_ACHIEVEMENTS = Object.freeze({
 export const MILESTONE_ACHIEVEMENTS = Object.freeze({
   'first-exercise': award('milestone-first-exercise', 'Cazador de Tácticas', 'Resolviste tu primer ejercicio de la carrera.'),
   'ten-exercises': award('milestone-ten-exercises', 'Azote de los Problemas', 'Alcanzaste diez ejercicios resueltos.'),
-  'twenty-exercises': award('milestone-twenty-exercises', 'Destructor de las Sesenta y Cuatro', 'Completaste los veinte ejercicios de una carrera perfecta.'),
   'first-positive-decision': award('milestone-first-positive-decision', 'El Destino Juega de tu Lado', 'Tu primera decisión favorable ya forma parte de la leyenda.'),
   'five-positive-decisions': award('milestone-five-positive-decisions', 'Oráculo de las Decisiones', 'Acertaste cinco decisiones fuera del tablero.'),
   'ten-positive-decisions': award('milestone-ten-positive-decisions', 'Señor Absoluto del Fuera de Tablero', 'Cerraste una carrera con diez decisiones favorables.'),
-  'perfect-season': award('milestone-perfect-season', 'Dos Golpes, Ninguna Duda', 'Resolviste los dos ejercicios de una temporada.'),
+  'perfect-season': award('milestone-perfect-season', 'Temporada Impecable', 'Resolviste el ejercicio de la temporada.'),
   'level-6': award('milestone-level-6', 'Embajador de las Olimpiadas', 'Alcanzaste el nivel 6 de la carrera.'),
   'level-7': award('milestone-level-7', 'Señor del Territorio Nacional', 'Alcanzaste el nivel 7 de la carrera.'),
   'level-8': award('milestone-level-8', 'Elegido de los Candidatos', 'Alcanzaste el nivel 8 de la carrera.'),

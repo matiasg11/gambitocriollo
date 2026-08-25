@@ -39,11 +39,10 @@ Estos logros se conceden al tomar la decisión indicada, independientemente de q
 |---|---|
 | Primer ejercicio resuelto | Cazador de Tácticas |
 | 10 ejercicios resueltos | Azote de los Problemas |
-| 20 ejercicios resueltos | Destructor de las Sesenta y Cuatro |
 | Primera decisión positiva | El Destino Juega de tu Lado |
 | 5 decisiones positivas | Oráculo de las Decisiones |
 | 10 decisiones positivas | Señor Absoluto del Fuera de Tablero |
-| Temporada con 2/2 ejercicios | Dos Golpes, Ninguna Duda |
+| Ejercicio de la temporada resuelto | Temporada Impecable |
 | Alcanzar el nivel 6 | Embajador de las Olimpiadas |
 | Alcanzar el nivel 7 | Señor del Territorio Nacional |
 | Alcanzar el nivel 8 | Elegido de los Candidatos |

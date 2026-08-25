@@ -21,7 +21,7 @@ for (let level = MIN_LEVEL; level <= MAX_LEVEL; level++) {
   const rows = exercises.filter(exercise => exercise.level === level);
   const ratings = rows.map(exercise => exercise.rating);
   const longest = Math.max(...rows.map(playerMoveCount));
-  const maximumPredrawnUses = (MAX_LEVEL + 1 - level) * 2;
+  const maximumPredrawnUses = MAX_LEVEL + 1 - level;
   report[level] = {
     count: rows.length,
     ratingMin: Math.min(...ratings),

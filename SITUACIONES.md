@@ -83,7 +83,7 @@ Para agregar una situación, copiá uno de los objetos de `career-events.js`, as
 | `final-teach-or-play` | La mesa que queda libre | Final | 1–10 |
 | `final-book-offer` | Las páginas de la carrera | Final | 1–10 |
 
-`finalOnly: true` incorpora el dilema al sorteo especial que ocurre después de completar los dos ejercicios de la temporada 10 y lo excluye del sorteo normal. `maxLevelOnChoose: 6` marca la elección como un bloqueo permanente de ascenso; actualmente se usa para la alternativa de aceptar la trampa.
+`finalOnly: true` incorpora el dilema al sorteo especial que ocurre después de completar el ejercicio de la temporada 10 y lo excluye del sorteo normal. `maxLevelOnChoose: 6` marca la elección como un bloqueo permanente de ascenso, sin reducir un nivel ya alcanzado; actualmente se usa para la alternativa de aceptar la trampa.
 
 ## Después de editar
 

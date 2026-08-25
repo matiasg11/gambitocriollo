@@ -4,13 +4,13 @@ import html2canvas from 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm';
 import { exercises } from './exercises.js?v=1.7.0';
 import { debugExercises } from './debug-exercises.js';
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from './backend-config.js';
-import { MAX_LEVEL, MIN_LEVEL, START_LEVEL, baseElo, maxElo, scoreElo, levelStageName } from './game-config.js?v=1.7.0';
+import { MAX_LEVEL, START_LEVEL, baseElo, maxElo, scoreElo, levelStageName } from './game-config.js?v=1.7.0';
 import { seasonScreen } from './season-screens.js';
 import { COUNTRIES, countryLabel } from './countries.js';
 
 const GAME_KEY = 'gambito-v6';
 const VISITOR_KEY = 'gambito-visitor-v1';
-const CLIENT_VERSION = '1.7.0';
+const CLIENT_VERSION = '1.8.0';
 const GAME_URL = 'https://cienciadelfindelmundo.com.ar/ajedrez/';
 const pieceName = { k:'rey', q:'dama', r:'torre', b:'alfil', n:'caballo', p:'peón' };
 const $ = id => document.getElementById(id);
@@ -256,8 +256,8 @@ function stats(){
   $('eloBreakdown').textContent = `Banda ${baseElo(state.level)}–${maxElo(state.level)} · Decisiones ${state.decisionElo >= 0 ? '+' : ''}${state.decisionElo} · Ejercicios +${state.exerciseElo}`;
   $('debugBadge').hidden = !isDebug();
   const done = state.seasonAnswers.length;
-  $('seasonProgress').textContent = `${done}/2`;
-  $('bar').style.width = `${done / 2 * 100}%`;
+  $('seasonProgress').textContent = `${done}/1`;
+  $('bar').style.width = `${done * 100}%`;
   $('rank').textContent = state.chessTitle === 'GM' ? 'Gran Maestro' : state.chessTitle === 'IM' ? 'Maestro Internacional' : state.chessTitle === 'FM' ? 'Maestro FIDE' : state.level >= 10 ? 'Campeón del mundo' : state.level === 9 ? 'Retador mundial' : state.level === 8 ? 'Candidato' : state.level >= 5 ? 'Figura nacional' : state.level >= 3 ? 'Talento regional' : 'Promesa del club';
 }
 
@@ -350,7 +350,7 @@ function loadPuzzle(ex){
   selected = null;
   last = [];
   screens('puzzle');
-  $('puzzleLevel').textContent = `Temporada ${state.season} · Ejercicio ${state.seasonAnswers.length + 1} de 2`;
+  $('puzzleLevel').textContent = `Temporada ${state.season} · Ejercicio único`;
   $('puzzleTitle').textContent = ex.title;
   $('objective').textContent = ex.objective;
   $('source').href = ex.source;
@@ -489,9 +489,13 @@ function finishExercise(result){
   stats();
   screens('result');
   hideRealStory();
-  $('resultTag').textContent = `Temporada ${completedSeason} completada · ${correct}/2 correctos`;
-  $('resultTitle').textContent = movement === 'up' ? `Subís al nivel ${state.level}` : movement === 'down' ? `Bajás al nivel ${state.level}` : `Te mantenés en el nivel ${state.level}`;
-  $('resultText').textContent = correct === 2 && previousLevel < MAX_LEVEL ? 'Resolviste los dos ejercicios y avanzás un escalón.' : correct === 2 ? 'Resolviste los dos ejercicios y revalidás tu lugar en la cima.' : correct === 1 ? 'Un acierto y un fallo: conservás tu nivel para la próxima temporada.' : previousLevel === MIN_LEVEL ? `Fallaste ambos ejercicios, pero el nivel ${MIN_LEVEL} es el piso de la carrera.` : 'Los dos ejercicios quedaron sin resolver y retrocedés un nivel.';
+  $('resultTag').textContent = `Temporada ${completedSeason} completada · ${correct}/1 ${correct === 1 ? 'correcto' : 'correctos'}`;
+  $('resultTitle').textContent = movement === 'up' ? `Subís al nivel ${state.level}` : `Te mantenés en el nivel ${state.level}`;
+  $('resultText').textContent = correct === 1 && previousLevel < MAX_LEVEL
+    ? 'Resolviste el ejercicio y avanzás un nivel.'
+    : correct === 1
+      ? 'Resolviste el ejercicio y revalidás tu lugar en la cima.'
+      : 'El ejercicio quedó sin resolver. Conservás tu nivel para la próxima temporada.';
   if(completedSeason === 10){
     $('resultTitle').textContent = 'Completaste la última temporada';
     $('resultText').textContent += ' Solo queda una decisión para cerrar tu carrera.';
@@ -562,6 +566,7 @@ async function resolveEvent(choice,box){
     $('resultTag').textContent = result.success ? 'La decisión funciona' : 'La carrera se complica';
     $('resultTitle').textContent = result.outcome.title;
     $('resultText').textContent = `${result.outcome.text} Impacto: ${result.change >= 0 ? '+' : ''}${result.change} ELO.`;
+    $('next').textContent = state.completed ? 'Finalizar Carrera' : 'Continuar →';
     $('next').onclick = () => route();
   } catch(error){
     buttons.forEach(button => button.disabled = false);

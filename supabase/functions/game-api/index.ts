@@ -6,8 +6,8 @@ import { careerEvents } from './career-events.js';
 import { decisionAchievement, milestoneAchievement } from './achievements.js';
 import { MAX_LEVEL, MIN_LEVEL, START_LEVEL, baseElo, maxElo, scoreElo } from './game-config.js';
 
-const CLIENT_VERSION = '1.7.0';
-const LIVE_CLIENT_VERSION = '1.6.0';
+const CLIENT_VERSION = '1.8.0';
+const LIVE_CLIENT_VERSION = '1.7.0';
 const PRIOR_CLIENT_VERSION = '1.5.0';
 const PREVIOUS_CLIENT_VERSION = '1.4.0';
 const LEGACY_CLIENT_VERSION = '1.2.0';
@@ -263,11 +263,15 @@ function exercisePool(session: Session, level = session.level) {
   });
 }
 
-function drawExercisePair(pool: any[], queue: string[]) {
-  if (pool.length < 2) throw new ApiError(422, 'Cada nivel necesita al menos dos ejercicios distintos.');
+function exercisesPerSeason(session: Session) {
+  return session.client_version === CLIENT_VERSION ? 1 : 2;
+}
+
+function drawExercises(pool: any[], queue: string[], count: number) {
+  if (pool.length < count) throw new ApiError(422, `Cada nivel necesita al menos ${count} ejercicio${count === 1 ? '' : 's'} distinto${count === 1 ? '' : 's'}.`);
   const allIds = pool.map(exerciseId);
   const selected: string[] = [];
-  while (selected.length < 2) {
+  while (selected.length < count) {
     if (!queue.length) queue.push(...shuffled(allIds));
     const candidate = queue.shift()!;
     if (!selected.includes(candidate)) selected.push(candidate);
@@ -297,7 +301,7 @@ function buildContentDraw(session: Session): ContentDraw {
       const pool = exercisePool(session, level);
       const queue = exerciseQueues.get(level) || [];
       slots[drawSlotKey(season, level)] = {
-        exerciseIds: drawExercisePair(pool, queue),
+        exerciseIds: drawExercises(pool, queue, exercisesPerSeason(session)),
         eventIds: shuffled(events).map((event: any) => event.id),
       };
       exerciseQueues.set(level, queue);
@@ -338,8 +342,9 @@ function drawSlot(session: Session) {
 }
 
 function slotExercisesAreValid(session: Session, slot: DrawSlot | null) {
-  if (!slot || !Array.isArray(slot.exerciseIds) || slot.exerciseIds.length !== 2) return false;
-  if (new Set(slot.exerciseIds).size !== 2) return false;
+  const count = exercisesPerSeason(session);
+  if (!slot || !Array.isArray(slot.exerciseIds) || slot.exerciseIds.length !== count) return false;
+  if (new Set(slot.exerciseIds).size !== count) return false;
   const validIds = new Set(exercisePool(session).map(exerciseId));
   return slot.exerciseIds.every((id) => validIds.has(id));
 }
@@ -368,7 +373,7 @@ async function ensureContentDraw(admin: any, session: Session) {
   const repairedSlot: DrawSlot = {
     exerciseIds: exercisesValid
       ? [...currentSlot!.exerciseIds]
-      : drawExercisePair(exercisePool(session), []),
+      : drawExercises(exercisePool(session), [], exercisesPerSeason(session)),
     eventIds: eventsValid
       ? [...currentSlot!.eventIds]
       : shuffled(eligibleEvents(session)).map((event: any) => event.id),
@@ -493,14 +498,15 @@ function publicEvent(event: any) {
 function seasonExercises(session: Session) {
   const pool = exercisePool(session);
   if (!pool.length) throw new ApiError(422, `No hay ejercicios para el nivel ${session.level}.`);
+  const count = exercisesPerSeason(session);
   if (CONTENT_DRAW_CLIENT_VERSIONS.has(session.client_version)) {
     const ids = drawSlot(session)?.exerciseIds || [];
     const planned = ids.map((id) => pool.find((item: any) => exerciseId(item) === id)).filter(Boolean);
-    if (planned.length !== 2) throw new ApiError(422, 'El presorteo de ejercicios necesita reparación.');
+    if (planned.length !== count) throw new ApiError(422, 'El presorteo de ejercicios necesita reparación.');
     return planned;
   }
-  const offset = ((session.season - 1) * 2) % pool.length;
-  return [pool[offset], pool[(offset + 1) % pool.length]];
+  const offset = ((session.season - 1) * count) % pool.length;
+  return Array.from({ length: count }, (_, index) => pool[(offset + index) % pool.length]);
 }
 
 function findExercise(session: Session, id: string) {
@@ -643,12 +649,12 @@ async function completeExercise(admin: any, session: Session, success: boolean, 
   let correct = answers.filter(Boolean).length;
   let movement = 'same';
 
-  if (answers.length === 2) {
+  if (answers.length === exercisesPerSeason(session)) {
     seasonCompleted = true;
     let nextLevel = session.level;
-    if (correct === 2) nextLevel = Math.min(session.cheating_accepted ? 6 : MAX_LEVEL, nextLevel + 1);
-    if (correct === 0) nextLevel = Math.max(MIN_LEVEL, nextLevel - 1);
-    movement = nextLevel > previousLevel ? 'up' : nextLevel < previousLevel ? 'down' : 'same';
+    const levelCap = session.cheating_accepted ? 6 : MAX_LEVEL;
+    if (success && nextLevel < levelCap) nextLevel += 1;
+    movement = nextLevel > previousLevel ? 'up' : 'same';
     changes.level = nextLevel;
     changes.season = session.season + 1;
     changes.season_answers = [];
@@ -659,8 +665,7 @@ async function completeExercise(admin: any, session: Session, success: boolean, 
     titleAward,
     success && session.wins < 1 && changes.wins >= 1 ? milestoneAchievement('first-exercise') : null,
     success && session.wins < 10 && changes.wins >= 10 ? milestoneAchievement('ten-exercises') : null,
-    success && session.wins < 20 && changes.wins >= 20 ? milestoneAchievement('twenty-exercises') : null,
-    seasonCompleted && correct === 2 ? milestoneAchievement('perfect-season') : null,
+    seasonCompleted && success ? milestoneAchievement('perfect-season') : null,
     seasonCompleted && changes.level > previousLevel ? milestoneAchievement(`level-${changes.level}`) : null,
   ]);
   const updated = await casUpdate(admin, session, changes);
@@ -809,7 +814,6 @@ const finalEvent =
       };
       if (Number.isInteger(choice.maxLevelOnChoose)) {
         changes.cheating_accepted = true;
-        changes.level = Math.min(session.level, choice.maxLevelOnChoose);
       }
       if (finalEvent) changes.completed_at = new Date().toISOString();
       const titleAward = enrichProgress(session, changes);

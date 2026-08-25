@@ -1,12 +1,12 @@
 # Gambito Criollo
 
-Juego narrativo de carrera ajedrecística con 10 temporadas, un dilema por temporada y 2 ejercicios tácticos en cada una.
+Juego narrativo de carrera ajedrecística con 10 temporadas, un dilema y un ejercicio táctico por temporada.
 
 ## Progresión
 
-- 2 ejercicios correctos: sube un nivel.
-- 1 correcto: mantiene el nivel.
-- 0 correctos: baja un nivel, excepto cuando ya está en nivel 1.
+- Ejercicio correcto: sube un nivel.
+- Ejercicio incorrecto: mantiene el nivel.
+- El jugador nunca retrocede de nivel.
 - El ELO mostrado para cada ejercicio es el rating de origen multiplicado por 1,5.
 
 Cada ejercicio resuelto también aporta ELO acumulativo:
@@ -27,9 +27,9 @@ La fórmula completa parte de `ELO base del nivel + saldo de decisiones + ELO ga
 | 5 | 1400 | 2500 |
 | 6 | 1750 | 2550 |
 | 7 | 1900 | 2600 |
-| 8 | 2550 | 2650 |
-| 9 | 2650 | 2700 |
-| 10 | 2700 | 2750 |
+| 8 | 2100 | 2650 |
+| 9 | 2300 | 2700 |
+| 10 | 2400 | 2750 |
 
 Los nombres especiales dependen del nivel y también de la temporada:
 
@@ -67,7 +67,7 @@ Los datos se guardan en Supabase mediante las migraciones de `supabase/migration
 
 Las 24 situaciones de carrera están en `career-events.js`. Cada una declara temporadas y niveles permitidos y puede incluir un desarrollo largo más un enlace a una columna de Ciencia del Fin del Mundo en Spotify. El presorteo respeta esos cuatro límites y conserva un orden de suplentes para evitar repetir un dilema durante una carrera. La guía para agregar nuevas situaciones está en `SITUACIONES.md`.
 
-Después de resolver los dos ejercicios de la temporada 10, el servidor elige uno de los dilemas marcados con `finalOnly: true`. La carrera y el ranking se cierran recién al tomar esa última decisión. La oferta de trampa puede fijar `maxLevelOnChoose: 6`: el servidor guarda esa decisión y bloquea permanentemente los ascensos por encima del nivel 6. El navegador precarga los dilemas normales durante la introducción y apenas termina la temporada anterior.
+Después de resolver el ejercicio de la temporada 10, el servidor elige uno de los dilemas marcados con `finalOnly: true`. La carrera y el ranking se cierran recién al tomar esa última decisión. La oferta de trampa puede fijar `maxLevelOnChoose: 6`: el servidor guarda esa decisión y bloquea permanentemente los ascensos por encima del nivel 6, sin hacer retroceder el nivel ya alcanzado. El navegador precarga los dilemas normales durante la introducción y apenas termina la temporada anterior.
 
 ## Banco de ejercicios
 
@@ -81,7 +81,7 @@ La validación acepta la línea principal de la base y también cualquier jugada
 
 ## Datos simulados del ranking
 
-`scripts/seed-ranking-simulations.sql` genera de forma determinista 1.000 carreras ficticias completas. Usa 1.000 combinaciones únicas de nombres y apellidos habituales en Argentina, repartidas en partes iguales entre nombres de hombres y mujeres. Todos llevan `client_version = 'simulation-ranking-v1'`, que permite distinguirlos y eliminarlos sin afectar partidas reales.
+`scripts/seed-ranking-simulations.sql` genera de forma determinista 2.000 carreras ficticias completas con un ejercicio por temporada. Usa combinaciones de nombres y apellidos habituales en Argentina, repartidas en partes iguales entre nombres de hombres y mujeres. Todos llevan `client_version = 'simulation-ranking-v2'`, que permite distinguirlos y eliminarlos sin afectar partidas reales.
 
 Para retirar solamente ese lote de prueba usá `scripts/clear-ranking-simulations.sql`. Las partidas reales no se eliminan.
 
