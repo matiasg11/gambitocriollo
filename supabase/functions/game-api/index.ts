@@ -903,7 +903,7 @@ const finalEvent =
       }
 
       if (isAlternativeCheckmate && !isExpectedMove) {
-        const reward = session.exercise_attempts === 3 ? 8 : session.exercise_attempts === 2 ? 4 : 2;
+        const reward = session.exercise_attempts === 3 ? 16 : session.exercise_attempts === 2 ? 8 : 4;
         const completed = await completeExercise(admin, session, true, reward);
         return response(request, {
           ok: true, status: 'solved', opponentMove: null, reward,
@@ -938,7 +938,7 @@ const finalEvent =
         });
       }
 
-      const reward = session.exercise_attempts === 3 ? 8 : session.exercise_attempts === 2 ? 4 : 2;
+      const reward = session.exercise_attempts === 3 ? 16 : session.exercise_attempts === 2 ? 8 : 4;
       const completed = await completeExercise(admin, session, true, reward);
       return response(request, {
         ok: true, status: 'solved', opponentMove, reward,

@@ -130,11 +130,11 @@ begin
           43
         )) % 100;
         if attempt_roll < round(35 + skill * 45) then
-          exercise_points := exercise_points + 8;
+          exercise_points := exercise_points + 16;
         elsif attempt_roll < round(75 + skill * 18) then
-          exercise_points := exercise_points + 4;
+          exercise_points := exercise_points + 8;
         else
-          exercise_points := exercise_points + 2;
+          exercise_points := exercise_points + 4;
         end if;
         level_number := least(7, level_number + 1);
       end if;

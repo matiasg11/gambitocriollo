@@ -11,9 +11,9 @@ Juego narrativo de carrera ajedrecística con 10 temporadas, un dilema y un ejer
 
 Cada ejercicio resuelto también aporta ELO acumulativo:
 
-- Primer intento: +8 ELO.
-- Segundo intento: +4 ELO.
-- Tercer intento: +2 ELO.
+- Primer intento: +16 ELO.
+- Segundo intento: +8 ELO.
+- Tercer intento: +4 ELO.
 - Sin resolver: +0 ELO.
 
 La fórmula completa parte de `ELO base del nivel + saldo de decisiones + ELO ganado en ejercicios` y limita el resultado a la banda mínima y máxima del nivel.
