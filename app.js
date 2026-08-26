@@ -380,7 +380,6 @@ function render(){
     const button = document.createElement('button');
     const dark = (file.charCodeAt(0) - 97 + rank) % 2 === 1;
     button.className = `square ${dark ? 'dark' : 'light'}`;
-    button.dataset.square = squareName;
     if(squareName === selected) button.classList.add('selected');
     if(last.includes(squareName)) button.classList.add('last');
     if(isCheck && piece?.type === 'k' && piece.color === checkedColor) button.classList.add('in-check');
@@ -401,12 +400,6 @@ function render(){
   }));
 }
 
-function updateSelection(){
-  document.querySelectorAll('#board .square').forEach(square => {
-    square.classList.toggle('selected', square.dataset.square === selected);
-  });
-}
-
 function celebrateCorrect(){
   const board = $('board');
   board.classList.remove('correct-answer');
@@ -421,12 +414,12 @@ async function tap(squareName){
   if(!selected){
     if(!piece || piece.color !== chess.turn()) return;
     selected = squareName;
-    updateSelection();
+    render();
     return;
   }
   if(piece && piece.color === chess.turn()){
     selected = squareName;
-    updateSelection();
+    render();
     return;
   }
 
@@ -439,7 +432,6 @@ async function tap(squareName){
   try { move = chess.move({from:selected, to:squareName, promotion}); }
   catch { move = null; }
   selected = null;
-  updateSelection();
   const attemptsBefore = attempts;
   movePending = true;
   try {
