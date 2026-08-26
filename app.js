@@ -31,6 +31,7 @@ let attempts = 3;
 let selected = null;
 let last = [];
 let boardOrientation = 'w';
+let boardBuiltOrientation = null;
 let solutionMode = 'san';
 let solutionDisplay = '';
 let initialPuzzleFen = '';
@@ -360,6 +361,34 @@ function loadPuzzle(ex){
   render();
 }
 
+function squareLayout(){
+  const ranks = boardOrientation === 'w' ? [8,7,6,5,4,3,2,1] : [1,2,3,4,5,6,7,8];
+  const files = boardOrientation === 'w' ? [...'abcdefgh'] : [...'hgfedcba'];
+  return { ranks, files };
+}
+
+// Construye las 64 casillas una sola vez para una orientación dada. Sólo se
+// vuelve a llamar cuando cambia la orientación del tablero. La interacción usa
+// un único listener delegado en #board (registrado en la inicialización), por
+// eso acá no se asignan handlers por botón.
+function buildBoard(){
+  const board = $('board');
+  board.innerHTML = '';
+  const { ranks, files } = squareLayout();
+  ranks.forEach((rank, ri) => files.forEach((file, fi) => {
+    const squareName = file + rank;
+    const button = document.createElement('button');
+    button.type = 'button';
+    const dark = (file.charCodeAt(0) - 97 + rank) % 2 === 1;
+    button.className = `square ${dark ? 'dark' : 'light'}`;
+    button.dataset.square = squareName;
+    if(ri === 7){ const label = document.createElement('span'); label.className = 'coordinate file'; label.textContent = file; button.appendChild(label); }
+    if(fi === 0){ const label = document.createElement('span'); label.className = 'coordinate rank'; label.textContent = rank; button.appendChild(label); }
+    board.appendChild(button);
+  }));
+  boardBuiltOrientation = boardOrientation;
+}
+
 function render(){
   $('attempts').textContent = '● '.repeat(attempts) + '○ '.repeat(3 - attempts);
   $('turn').textContent = `Juegan ${chess.turn() === 'w' ? 'blancas' : 'negras'} · Tu movimiento`;
@@ -370,33 +399,40 @@ function render(){
   $('checkStatus').className = `check-status ${ownKingInCheck ? 'against' : 'given'}`;
   $('checkStatus').textContent = ownKingInCheck ? '⚠ Tu rey está en jaque' : '⚡ ¡Jaque al rival!';
   const board = $('board');
-  board.innerHTML = '';
-  const ranks = boardOrientation === 'w' ? [8,7,6,5,4,3,2,1] : [1,2,3,4,5,6,7,8];
-  const files = boardOrientation === 'w' ? [...'abcdefgh'] : [...'hgfedcba'];
+  if(boardBuiltOrientation !== boardOrientation) buildBoard();
+  board.classList.toggle('pending', movePending);
 
+  const { ranks, files } = squareLayout();
+  let index = 0;
   ranks.forEach((rank, ri) => files.forEach((file, fi) => {
     const squareName = file + rank;
     const piece = chess.get(squareName);
-    const button = document.createElement('button');
+    const button = board.children[index++];
     const dark = (file.charCodeAt(0) - 97 + rank) % 2 === 1;
     button.className = `square ${dark ? 'dark' : 'light'}`;
     if(squareName === selected) button.classList.add('selected');
     if(last.includes(squareName)) button.classList.add('last');
-    if(isCheck && piece?.type === 'k' && piece.color === checkedColor) button.classList.add('in-check');
+    const inCheck = isCheck && piece?.type === 'k' && piece.color === checkedColor;
+    if(inCheck) button.classList.add('in-check');
 
+    let image = button.querySelector('.piece-image');
     if(piece){
-      const image = document.createElement('img');
-      image.className = 'piece-image';
-      image.src = `assets/pieces/${piece.color}${piece.type.toUpperCase()}.svg`;
-      image.alt = '';
-      image.draggable = false;
-      button.appendChild(image);
+      if(!image){
+        image = document.createElement('img');
+        image.className = 'piece-image';
+        image.alt = '';
+        image.draggable = false;
+        button.prepend(image);
+      }
+      const src = `assets/pieces/${piece.color}${piece.type.toUpperCase()}.svg`;
+      if(image.getAttribute('src') !== src) image.setAttribute('src', src);
+    } else if(image){
+      image.remove();
     }
-    if(ri === 7){ const label = document.createElement('span'); label.className = 'coordinate file'; label.textContent = file; button.appendChild(label); }
-    if(fi === 0){ const label = document.createElement('span'); label.className = 'coordinate rank'; label.textContent = rank; button.appendChild(label); }
-    button.setAttribute('aria-label', piece ? `${squareName}, ${pieceName[piece.type]} ${piece.color === 'w' ? 'blanco' : 'negro'}${button.classList.contains('in-check') ? ', en jaque' : ''}` : squareName);
-    button.onclick = () => tap(squareName);
-    board.appendChild(button);
+
+    // Las etiquetas de coordenadas se generan en buildBoard y sólo dependen de
+    // la orientación, por lo que no necesitan actualizarse en cada render.
+    button.setAttribute('aria-label', piece ? `${squareName}, ${pieceName[piece.type]} ${piece.color === 'w' ? 'blanco' : 'negro'}${inCheck ? ', en jaque' : ''}` : squareName);
   }));
 }
 
@@ -406,6 +442,12 @@ function celebrateCorrect(){
   void board.offsetWidth;
   board.classList.add('correct-answer');
   board.addEventListener('animationend', () => board.classList.remove('correct-answer'), {once:true});
+}
+
+function setMovePending(value){
+  movePending = value;
+  const board = $('board');
+  if(board) board.classList.toggle('pending', value);
 }
 
 async function tap(squareName){
@@ -433,7 +475,7 @@ async function tap(squareName){
   catch { move = null; }
   selected = null;
   const attemptsBefore = attempts;
-  movePending = true;
+  setMovePending(true);
   try {
     const result = await serverAction('move',{move:submittedMove});
     applyServerState(result.state);
@@ -486,7 +528,7 @@ async function tap(squareName){
     for(let index = 0; index < step; index++) playToken(chess,sequence[index],solutionMode);
     render();
     feedback(error.message,'bad');
-  } finally { movePending = false; }
+  } finally { setMovePending(false); }
 }
 
 function finishExercise(result){
@@ -922,6 +964,13 @@ $('again').onclick = playAgain;
 $('openRanking').onclick = openHistoricalRanking;
 $('closeRanking').onclick = closeHistoricalRanking;
 document.querySelectorAll('[data-ranking-sort]').forEach(button => button.onclick = sortHistoricalRanking);
+// Único listener delegado para todo el tablero: reemplaza los 64 onclick por
+// botón. El nombre de la casilla viaja en dataset.square.
+$('board').addEventListener('click', event => {
+  const square = event.target.closest('.square');
+  if(!square || !square.dataset.square) return;
+  tap(square.dataset.square);
+});
 setupShareUI();
 $('share').onclick = shareResults;
 
